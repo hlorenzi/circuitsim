@@ -53,6 +53,15 @@ export class ComponentLine
 	}
 	
 	
+	getOutgoingDirectionFromNode(index)
+	{
+		const p1 = this.points[index]
+		const p2 = this.points[index == 0 ? 1 : 0]
+		
+		return Math.atan2(p1.y - p2.y, p2.x - p1.x)
+	}
+	
+	
 	getHover(pos)
 	{
 		const pax = pos.x - this.points[0].x

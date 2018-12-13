@@ -224,11 +224,12 @@ export class CircuitEditor
 				let node = this.nodes.get(key)
 				if (!node)
 				{
-					node = { index: this.nodes.size, pos: component.points[i] }
+					node = { index: this.nodes.size, pos: component.points[i], outgoingDirections: [], labelDirection: 0 }
 					this.nodes.set(key, node)
 				}
 				
 				component.nodes[i] = node.index
+				node.outgoingDirections.push(component.getOutgoingDirectionFromNode(i))
 			}
 				
 			if (this.groundNodeIndex == -1 && component.isVoltageSource && component.voltage)
@@ -238,7 +239,36 @@ export class CircuitEditor
 		if (this.groundNodeIndex == -1)
 		{
 			this.groundNodeIndex = this.nodes.size
-			this.nodes.set(0, { index: this.nodes.size, pos: { x: -1, y: -1 }})
+			this.nodes.set(0, { index: this.nodes.size, pos: { x: -1, y: -1 }, outgoingDirections: [], labelDirection: 0 })
+		}
+		
+		for (let [key, node] of this.nodes)
+		{
+			if (node.outgoingDirections.length == 1)
+				node.labelDirection = node.outgoingDirections[0] + Math.PI
+			
+			else
+			{
+				node.outgoingDirections.sort((a, b) => a - b)
+				
+				let biggestGapSize = 0
+				for (let i = 0; i < node.outgoingDirections.length; i++)
+				{
+					const iNext = (i + 1) % node.outgoingDirections.length
+					
+					const curDir  = node.outgoingDirections[i]
+					const nextDir = node.outgoingDirections[iNext]
+					
+					const wrapAround = (nextDir < curDir ? Math.PI * 2 : 0)
+					const gapSize = (wrapAround * 2 + nextDir) - (wrapAround + curDir)
+					
+					if (gapSize > biggestGapSize)
+					{
+						biggestGapSize = gapSize
+						node.labelDirection = curDir + gapSize / 2
+					}
+				}
+			}
 		}
 		
 		this.refreshSolver()
@@ -344,8 +374,24 @@ export class CircuitEditor
 	{
 		this.ctx.fillStyle = "#00ff00"
 		this.ctx.font = "15px Verdana"
-		for (const component of this.components)
-			for (let i = 0; i < component.points.length; i++)
-				this.ctx.fillText(this.getNodeVoltage(component.nodes[i]).toFixed(3), component.points[i].x - 15, component.points[i].y - 15)
+		this.ctx.textBaseline = "middle"
+		
+		for (const [key, node] of this.nodes)
+		{
+			const xOffset = 15 *  Math.cos(node.labelDirection)
+			const yOffset = 15 * -Math.sin(node.labelDirection)
+			
+			if (Math.abs(xOffset) < Math.abs(yOffset) * 0.1)
+				this.ctx.textAlign = "center"
+			else if (xOffset > 0)
+				this.ctx.textAlign = "left"
+			else
+				this.ctx.textAlign = "right"
+			
+			const v = this.getNodeVoltage(node.index)
+			const str = (Math.round(v * 1000) / 1000).toString() + " V"
+			
+			this.ctx.fillText(str, node.pos.x + xOffset, node.pos.y + yOffset)
+		}
 	}
 }

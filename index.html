@@ -8,9 +8,74 @@
 	
 	
 	<body>
-		<canvas id="canvasMain" width="1280" height="720"></canvas>
-		<br>
+		<div id="divMain">
+			<div id="divToolbox"></div>
+			<div id="divEditor">
+				<canvas id="canvasMain" width="1280" height="720"></canvas>
+			</div>
+		</div>
 	</body>
+	
+	
+	<style>
+		html, body
+		{
+			margin: 0;
+			border: 0;
+			padding: 0;
+			width: 100vw;
+			height: 100vh;
+			overflow: hidden;
+		}
+	
+		#divMain
+		{
+			display: grid;
+			width: 100%;
+			height: 100%;
+			grid-template-columns: 1fr;
+			grid-template-rows: 5em 1fr;
+		}
+		
+		#divToolbox
+		{
+			grid-column: 1;
+			grid-row: 1;
+			background-color: #223;
+			border-bottom: 1px solid #668;
+		}
+		
+		#divEditor
+		{
+			grid-column: 1;
+			grid-row: 2;
+			width: 100%;
+			height: 100%;
+			background-color: #000;
+		}
+		
+		.buttonTool
+		{
+			width: 5em;
+			height: 5em;
+			margin: 0.5em;
+			margin-right: 0;
+			border: 2px solid #88a;
+			border-radius: 0.5em;
+			background-color: transparent;
+		}
+		
+		.buttonToolSelected
+		{
+			background-color: #851;
+		}
+		
+		.buttonToolIcon
+		{
+			width: 4em;
+			height: 4em;
+		}
+	</style>
 	
 	
 	<script type="module" src="src/main.js"></script>

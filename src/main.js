@@ -7,28 +7,57 @@ import { ComponentCurrentSource } from "./componentCurrentSource.js"
 
 
 let gEditor = null
+let gButtonTools = []
 
 
 document.body.onload = function()
 {
 	gEditor = new CircuitEditor(document.getElementById("canvasMain"))
 	gEditor.run()
+	
+	onResize()
+	window.onresize = (ev) => onResize()
 }
 
 
-function addTool(name, func)
+function onResize()
+{
+	const divEditor = document.getElementById("divEditor")
+	gEditor.resize(divEditor.clientWidth, divEditor.clientHeight)
+}
+
+
+function addTool(iconSrc, component)
 {
 	let button = document.createElement("button")
-	button.innerHTML = name
-	button.onclick = func
+	button.className = "buttonTool"
 	
-	document.body.appendChild(button)
+	if (component == null)
+		button.className += " buttonToolSelected"
+	
+	let img = document.createElement("img")
+	img.className = "buttonToolIcon"
+	img.src = iconSrc
+	button.appendChild(img)
+	
+	document.getElementById("divToolbox").appendChild(button)
+	
+	gButtonTools.push(button)
+	
+	button.onclick = () =>
+	{
+		for (let bt of gButtonTools)
+			bt.className = "buttonTool"
+		
+		button.className = "buttonTool buttonToolSelected"
+		gEditor.mouseAddComponentClass = component
+	}
 }
 
 
-addTool("Grab", () => gEditor.mouseAddComponentClass = null)
-addTool("Draw Wire", () => gEditor.mouseAddComponentClass = ComponentWire)
-addTool("Draw Battery", () => gEditor.mouseAddComponentClass = ComponentBattery)
-addTool("Draw Resistor", () => gEditor.mouseAddComponentClass = ComponentResistor)
-addTool("Draw Current Source", () => gEditor.mouseAddComponentClass = ComponentCurrentSource)
+addTool("assets/icon_grab.png", null)
+addTool("assets/icon_wire.png", ComponentWire)
+addTool("assets/icon_battery.png", ComponentBattery)
+addTool("assets/icon_resistor.png", ComponentResistor)
+addTool("assets/icon_currentsource.png", ComponentCurrentSource)
 

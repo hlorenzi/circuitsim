@@ -33,6 +33,12 @@ export class ComponentLine
 	}
 	
 	
+	isDegenerate()
+	{
+		return this.points[0].x == this.points[1].x && this.points[0].y == this.points[1].y
+	}
+	
+	
 	isFullySelected()
 	{
 		for (let i = 0; i < this.selected.length; i++)
@@ -191,7 +197,7 @@ export class ComponentLine
 	
 	drawCurrent(manager, ctx)
 	{
-		if (this.current == 0)
+		if (this.current == 0 || manager.debugDrawClean)
 			return
 		
 		ctx.save()
@@ -214,6 +220,9 @@ export class ComponentLine
 	
 	drawHover(manager, ctx, hover)
 	{
+		if (manager.debugDrawClean)
+			return
+		
 		ctx.save()
 		
 		const highlightSize = 20
@@ -254,6 +263,9 @@ export class ComponentLine
 	
 	drawSelection(manager, ctx)
 	{
+		if (manager.debugDrawClean)
+			return
+		
 		ctx.save()
 		
 		const highlightSize = 18

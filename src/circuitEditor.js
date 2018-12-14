@@ -32,13 +32,30 @@ export class CircuitEditor
 		this.canvas.onmouseup   = (ev) => this.onMouseUp  (ev)
 		
 		window.onkeydown = (ev) => this.onKeyDown(ev)
+		
+		this.debugDrawClean = false
 	}
 	
 	
 	run()
 	{
+		for (const component of this.components)
+			component.step(this)
+		
 		this.draw()
 		window.requestAnimationFrame(() => this.run())
+	}
+	
+	
+	resize(width, height)
+	{
+		this.width = width
+		this.height = height
+		
+		this.canvas.width = width
+		this.canvas.height = height
+		
+		this.draw()
 	}
 	
 	
@@ -121,6 +138,8 @@ export class CircuitEditor
 					}
 			}
 		}
+		
+		this.draw()
 	}
 	
 	
@@ -173,6 +192,8 @@ export class CircuitEditor
 			return
 		
 		this.mouseDown = false
+		this.removeDegenerateComponents()
+		this.draw()
 	}
 	
 	
@@ -206,6 +227,16 @@ export class CircuitEditor
 	}
 	
 	
+	removeDegenerateComponents()
+	{
+		for (let i = this.components.length - 1; i >= 0; i--)
+		{
+			if (this.components[i].isDegenerate())
+				this.components.splice(i, 1)
+		}
+	}
+	
+	
 	refreshNodes()
 	{
 		this.nodes = new Map()
@@ -224,7 +255,7 @@ export class CircuitEditor
 				let node = this.nodes.get(key)
 				if (!node)
 				{
-					node = { index: this.nodes.size, pos: component.points[i], outgoingDirections: [], labelDirection: 0 }
+					node = { index: this.nodes.size, pos: component.points[i], outgoingDirections: [], labelDirection: 0, visible: true }
 					this.nodes.set(key, node)
 				}
 				
@@ -239,7 +270,7 @@ export class CircuitEditor
 		if (this.groundNodeIndex == -1)
 		{
 			this.groundNodeIndex = this.nodes.size
-			this.nodes.set(0, { index: this.nodes.size, pos: { x: -1, y: -1 }, outgoingDirections: [], labelDirection: 0 })
+			this.nodes.set(0, { index: this.nodes.size, pos: { x: -1, y: -1 }, outgoingDirections: [], labelDirection: 0, visible: false })
 		}
 		
 		for (let [key, node] of this.nodes)
@@ -320,8 +351,22 @@ export class CircuitEditor
 	
 	draw()
 	{
-		this.ctx.fillStyle = "#000022"
-		this.ctx.fillRect(0, 0, this.width, this.height)
+		if (this.debugDrawClean)
+			this.ctx.clearRect(0, 0, this.width, this.height)
+		else
+		{
+			this.ctx.fillStyle = "#000022"
+			this.ctx.fillRect(0, 0, this.width, this.height)
+		}
+		
+		if (this.components.length == 0)
+		{
+			this.ctx.font = "15px Verdana"
+			this.ctx.textAlign = "center"
+			this.ctx.textBaseline = "middle"
+			this.ctx.fillStyle = "#aac"
+			this.ctx.fillText("Select a tool and draw here!", this.width / 2, this.height / 2)
+		}
 		
 		this.ctx.lineWidth = 4
 		this.ctx.lineCap = "round"
@@ -329,19 +374,16 @@ export class CircuitEditor
 		for (const component of this.components)
 			component.drawSelection(this, this.ctx)
 		
-		if (this.mouseCurrentHoverComponent != null)
+		if (this.mouseCurrentHoverComponent != null && !this.mouseDown)
 			this.mouseCurrentHoverComponent.drawHover(this, this.ctx, this.mouseCurrentHoverData)
 		
 		for (const component of this.components)
-		{
-			component.step(this)
 			component.draw(this, this.ctx)
-		}
 		
 		for (const component of this.components)
 			component.drawCurrent(this, this.ctx)
 		
-		this.drawDebugVoltages()
+		this.drawNodeVoltages()
 		
 		if (!this.mouseDown && this.mousePos != null && this.mouseAddComponentClass != null)
 		{
@@ -370,7 +412,7 @@ export class CircuitEditor
 	}
 	
 	
-	drawDebugVoltages()
+	drawNodeVoltages()
 	{
 		this.ctx.fillStyle = "#00ff00"
 		this.ctx.font = "15px Verdana"
@@ -378,6 +420,9 @@ export class CircuitEditor
 		
 		for (const [key, node] of this.nodes)
 		{
+			if (!node.visible)
+				continue
+			
 			const xOffset = 15 *  Math.cos(node.labelDirection)
 			const yOffset = 15 * -Math.sin(node.labelDirection)
 			

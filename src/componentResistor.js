@@ -21,7 +21,7 @@ export class ComponentResistor extends ComponentLine
 	}
 	
 	
-	stamp(solver)
+	stamp(manager, solver)
 	{
 		solver.stampResistance(this.nodes[0], this.nodes[1], this.resistance)
 	}

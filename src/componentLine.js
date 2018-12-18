@@ -23,11 +23,49 @@ export class ComponentLine
 	
 	stepCurrentAnim(mult)
 	{
-		this.currentAnim = (1 + this.currentAnim + mult * (this.current * 4.5)) % 1
+		const delta = Math.max(-0.25, Math.min(0.25, mult * (this.current * 4.5)))
+		
+		this.currentAnim = (1 + this.currentAnim + delta) % 1
 	}
 	
 	
-	stamp(solver)
+	stamp(manager, solver)
+	{
+		
+	}
+	
+	
+	solverBegin(manager, solver)
+	{
+		
+	}
+	
+	
+	solverFrameBegin(manager, solver)
+	{
+		
+	}
+	
+	
+	solverIterationBegin(manager, solver)
+	{
+		
+	}
+	
+	
+	solverIteration(manager, solver)
+	{
+		
+	}
+	
+	
+	solverIterationEnd(manager, solver)
+	{
+		
+	}
+	
+	
+	solverFrameEnd(manager, solver)
 	{
 		
 	}

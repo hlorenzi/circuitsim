@@ -18,7 +18,7 @@ export class ComponentWire extends ComponentLine
 	}
 	
 	
-	stamp(solver)
+	stamp(manager, solver)
 	{
 		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], 0)
 	}

@@ -8,6 +8,8 @@ export class CircuitSolver
 {
 	constructor()
 	{
+		this.readyToStamp = false
+		
 		this.matrixG = null
 		this.matrixB = null
 		this.matrixC = null
@@ -23,6 +25,8 @@ export class CircuitSolver
 	
 	stampBegin(nodeNum, voltNum, groundNodeIndex)
 	{
+		this.readyToStamp = true
+		
 		this.nodeNum = nodeNum
 		this.voltNum = voltNum
 		this.groundNodeIndex = groundNodeIndex
@@ -78,10 +82,6 @@ export class CircuitSolver
 		this.matrixB.copyTo(this.matrixA, this.nodeNum,            0)
 		this.matrixC.copyTo(this.matrixA,            0, this.nodeNum)
 		
-		this.matrixZ = new Matrix(1, this.nodeNum + this.voltNum)
-		this.matrixI.copyTo(this.matrixZ, 0,            0)
-		this.matrixE.copyTo(this.matrixZ, 0, this.nodeNum)
-		
 		//console.log("---")
 		//console.log(this.matrixA.toString())
 		//console.log(this.matrixZ.toString())
@@ -92,7 +92,6 @@ export class CircuitSolver
 		// Remove ground node rows and columns.
 		this.matrixA = this.matrixA.removeRow(this.groundNodeIndex)
 		this.matrixA = this.matrixA.removeColumn(this.groundNodeIndex)
-		this.matrixZ = this.matrixZ.removeRow(this.groundNodeIndex)
 		
 		//console.log(this.matrixA.toString())
 		//console.log(this.matrixZ.toString())
@@ -110,6 +109,11 @@ export class CircuitSolver
 	{
 		if (this.matrixAPivots == null)
 			return
+		
+		this.matrixZ = new Matrix(1, this.nodeNum + this.voltNum)
+		this.matrixI.copyTo(this.matrixZ, 0,            0)
+		this.matrixE.copyTo(this.matrixZ, 0, this.nodeNum)
+		this.matrixZ = this.matrixZ.removeRow(this.groundNodeIndex)
 		
 		this.solution = this.matrixA.luSolve(this.matrixAPivots, this.matrixZ).insertRow(this.groundNodeIndex)
 		

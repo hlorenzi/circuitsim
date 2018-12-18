@@ -12,6 +12,9 @@ export class CircuitEditor
 		
 		this.tileSize = 25
 		
+		this.time = 0
+		this.timePerIteration = 5e-6
+		
 		this.components = []
 		
 		this.solver = new CircuitSolver()
@@ -41,6 +44,31 @@ export class CircuitEditor
 	{
 		for (const component of this.components)
 			component.step(this)
+		
+		if (this.solver != null && this.solver.readyToStamp && this.components.length > 0)
+		{
+			for (const component of this.components)
+				component.solverFrameBegin(this, this.solver)
+			
+			for (let iter = 0; iter < 50; iter++)
+			{
+				for (const component of this.components)
+					component.solverIterationBegin(this, this.solver)
+				
+				for (const component of this.components)
+					component.solverIteration(this, this.solver)
+				
+				this.solver.solve()
+				
+				for (const component of this.components)
+					component.solverIterationEnd(this, this.solver)
+			}
+			
+			for (const component of this.components)
+				component.solverFrameEnd(this, this.solver)
+			
+			this.time += 50 * this.timePerIteration
+		}
 		
 		this.draw()
 		window.requestAnimationFrame(() => this.run())
@@ -163,6 +191,8 @@ export class CircuitEditor
 				for (let component of this.components)
 					component.dragMove(this, deltaPos)
 			}
+		
+			this.refreshNodes()
 		}
 		
 		else if (this.mouseAddComponentClass == null)
@@ -181,8 +211,6 @@ export class CircuitEditor
 				}
 			}
 		}
-		
-		this.refreshNodes()
 	}
 	
 	
@@ -308,13 +336,18 @@ export class CircuitEditor
 	
 	refreshSolver()
 	{
+		this.time = 0
+		
 		this.solver.stampBegin(this.nodes.size, this.voltageSources, this.groundNodeIndex)
 		
 		for (const component of this.components)
-			component.stamp(this.solver)
+			component.stamp(this, this.solver)
 		
 		this.solver.stampEnd()
 		this.solver.solve()
+		
+		for (const component of this.components)
+			component.solverBegin(this, this.solver)
 	}
 	
 	
@@ -367,6 +400,12 @@ export class CircuitEditor
 			this.ctx.fillStyle = "#aac"
 			this.ctx.fillText("Select a tool and draw here!", this.width / 2, this.height / 2)
 		}
+		
+		this.ctx.fillStyle = "#aac"
+		this.ctx.font = "15px Verdana"
+		this.ctx.textAlign = "left"
+		this.ctx.textBaseline = "top"
+		this.ctx.fillText("t = " + this.time.toFixed(3) + " s", 10, 10)
 		
 		this.ctx.lineWidth = 4
 		this.ctx.lineCap = "round"

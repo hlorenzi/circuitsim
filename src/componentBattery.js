@@ -19,7 +19,7 @@ export class ComponentBattery extends ComponentLine
 	}
 	
 	
-	stamp(solver)
+	stamp(manager, solver)
 	{
 		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], this.voltage)
 	}

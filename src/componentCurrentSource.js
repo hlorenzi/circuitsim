@@ -17,7 +17,7 @@ export class ComponentCurrentSource extends ComponentLine
 	}
 	
 	
-	stamp(solver)
+	stamp(manager, solver)
 	{
 		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.current)
 	}

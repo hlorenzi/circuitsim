@@ -108,6 +108,8 @@ export class CircuitEditor
 	
 	onMouseDown(ev)
 	{
+		ev.preventDefault()
+		
 		if (this.mouseDown)
 			return
 		
@@ -173,6 +175,8 @@ export class CircuitEditor
 	
 	onMouseMove(ev)
 	{
+		ev.preventDefault()
+		
 		const pos = this.snapPos(this.getMousePos(ev))
 		this.mousePos = pos
 		
@@ -216,6 +220,8 @@ export class CircuitEditor
 	
 	onMouseUp(ev)
 	{
+		ev.preventDefault()
+		
 		if (!this.mouseDown)
 			return
 		

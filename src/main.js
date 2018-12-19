@@ -4,6 +4,7 @@ import { ComponentBattery } from "./componentBattery.js"
 import { ComponentResistor } from "./componentResistor.js"
 import { ComponentCurrentSource } from "./componentCurrentSource.js"
 import { ComponentCapacitor } from "./componentCapacitor.js"
+import { ComponentInductor } from "./componentInductor.js"
 
 
 
@@ -62,4 +63,5 @@ addTool("assets/icon_battery.png", ComponentBattery)
 addTool("assets/icon_resistor.png", ComponentResistor)
 addTool("assets/icon_currentsource.png", ComponentCurrentSource)
 addTool("assets/icon_capacitor.png", ComponentCapacitor)
+addTool("assets/icon_inductor.png", ComponentInductor)
 

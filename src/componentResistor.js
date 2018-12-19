@@ -34,11 +34,9 @@ export class ComponentResistor extends ComponentLine
 		const symbolSegments  = 9
 	
 		this.drawSymbolBegin(manager, ctx, symbolSize)
-		
-		let grad = ctx.createLinearGradient(-symbolSize / 2, 0, symbolSize / 2, 0)
-		grad.addColorStop(0, manager.getVoltageColor(manager.getNodeVoltage(this.nodes[0])))
-		grad.addColorStop(1, manager.getVoltageColor(manager.getNodeVoltage(this.nodes[1])))
-		ctx.strokeStyle = grad
+		this.drawSymbolSetGradient(manager, ctx, symbolSize,
+			manager.getVoltageColor(manager.getNodeVoltage(this.nodes[0])),
+			manager.getVoltageColor(manager.getNodeVoltage(this.nodes[1])))
 		
 		ctx.beginPath()
 		ctx.moveTo(-symbolSize / 2, 0)

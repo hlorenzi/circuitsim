@@ -227,6 +227,15 @@ export class ComponentLine
 	}
 	
 	
+	drawSymbolSetGradient(manager, ctx, symbolSize, color1, color2)
+	{
+		let grad = ctx.createLinearGradient(-symbolSize / 2, 0, symbolSize / 2, 0)
+		grad.addColorStop(0, color1)
+		grad.addColorStop(1, color2)
+		ctx.strokeStyle = grad
+	}
+	
+	
 	drawSymbolEnd(manager, ctx)
 	{
 		ctx.restore()

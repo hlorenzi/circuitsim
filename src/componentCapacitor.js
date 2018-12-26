@@ -16,6 +16,25 @@ export class ComponentCapacitor extends ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "c"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return this.nodes[0] + "," + this.nodes[1] + "," + this.capacitance + ","
+	}
+	
+	
+	loadFromString(manager, loadData, reader)
+	{
+		super.loadFromString(manager, loadData, reader)
+		this.capacitance = parseFloat(reader.read())
+	}
+	
+	
 	step(manager)
 	{
 		this.stepCurrentAnim(-1)

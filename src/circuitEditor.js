@@ -1,4 +1,10 @@
 import { CircuitSolver } from "./circuitSolver.js"
+import { ComponentWire } from "./componentWire.js"
+import { ComponentBattery } from "./componentBattery.js"
+import { ComponentResistor } from "./componentResistor.js"
+import { ComponentCurrentSource } from "./componentCurrentSource.js"
+import { ComponentCapacitor } from "./componentCapacitor.js"
+import { ComponentInductor } from "./componentInductor.js"
 
 
 export class CircuitEditor
@@ -483,5 +489,85 @@ export class CircuitEditor
 			
 			this.ctx.fillText(str, node.pos.x + xOffset, node.pos.y + yOffset)
 		}
+	}
+	
+	
+	saveToString()
+	{
+		let str = "0,"
+		str += this.nodes.size + ","
+		
+		for (const [key, node] of this.nodes)
+		{
+			str += (node.pos.x / this.tileSize).toString() + ","
+			str += (node.pos.y / this.tileSize).toString() + ","
+		}
+		
+		for (const component of this.components)
+		{
+			str += component.constructor.getSaveId() + ","
+			str += component.saveToString(this)
+		}
+		
+		return str
+	}
+	
+	
+	loadFromString(str)
+	{
+		let strParts = str.split(",")
+		
+		let reader =
+		{
+			index: 0,
+			isOver() { return this.index >= strParts.length },
+			read() { return strParts[this.index++] }
+		}
+		
+		let loadData = 
+		{
+			nodes: []
+		}
+		
+		const version = parseInt(reader.read())
+		const nodeNum = parseInt(reader.read())
+		
+		for (let i = 0; i < nodeNum; i++)
+		{
+			const x = parseInt(reader.read()) * this.tileSize
+			const y = parseInt(reader.read()) * this.tileSize
+			loadData.nodes.push({ x, y })
+		}
+		
+		const componentClasses =
+		[
+			ComponentWire,
+			ComponentBattery,
+			ComponentResistor,
+			ComponentCurrentSource,
+			ComponentCapacitor,
+			ComponentInductor
+		]
+		
+		let componentIds = new Map()
+		for (const c of componentClasses)
+			componentIds.set(c.getSaveId(), c)
+		
+		while (!reader.isOver())
+		{
+			const id = reader.read()
+			if (id == null || id == "")
+				break
+			
+			const componentClass = componentIds.get(id)
+			const component = new componentClass({ x: 0, y: 0 })
+			component.loadFromString(this, loadData, reader)
+			
+			this.components.push(component)
+		}
+		
+		this.removeDegenerateComponents()
+		this.refreshNodes()
+		this.draw()
 	}
 }

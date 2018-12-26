@@ -11,6 +11,25 @@ export class ComponentCurrentSource extends ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "i"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return this.nodes[0] + "," + this.nodes[1] + "," + this.current + ","
+	}
+	
+	
+	loadFromString(manager, loadData, reader)
+	{
+		super.loadFromString(manager, loadData, reader)
+		this.current = parseFloat(reader.read())
+	}
+	
+	
 	step(manager)
 	{
 		this.stepCurrentAnim(-1)

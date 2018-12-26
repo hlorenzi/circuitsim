@@ -11,6 +11,25 @@ export class ComponentResistor extends ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "r"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return this.nodes[0] + "," + this.nodes[1] + "," + this.resistance + ","
+	}
+	
+	
+	loadFromString(manager, loadData, reader)
+	{
+		super.loadFromString(manager, loadData, reader)
+		this.resistance = parseFloat(reader.read())
+	}
+	
+	
 	step(manager)
 	{
 		const v0 = manager.getNodeVoltage(this.nodes[0])

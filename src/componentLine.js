@@ -15,6 +15,28 @@ export class ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "-"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return ""
+	}
+	
+	
+	loadFromString(manager, loadData, reader)
+	{
+		const node1 = parseInt(reader.read())
+		const node2 = parseInt(reader.read())
+		 
+		this.points[0] = { x: loadData.nodes[node1].x, y: loadData.nodes[node1].y }
+		this.points[1] = { x: loadData.nodes[node2].x, y: loadData.nodes[node2].y }
+	}
+	
+	
 	step(manager)
 	{
 		this.stepCurrentAnim(1)

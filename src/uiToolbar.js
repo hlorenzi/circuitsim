@@ -18,6 +18,8 @@ export class UIToolbar extends React.Component
 	render()
 	{
 		return [
+			this.makeMenuItem("Save to URL", this.props.saveToURL),
+			React.createElement("br"),
 			this.makeToolButton("assets/icon_grab.png", null),
 			this.makeToolButton("assets/icon_wire.png", ComponentWire),
 			this.makeToolButton("assets/icon_battery.png", ComponentBattery),
@@ -29,11 +31,18 @@ export class UIToolbar extends React.Component
 	}
 	
 	
+	makeMenuItem(text, onClick)
+	{
+		return React.createElement("a",
+			{ className: "buttonMenu", onClick },
+			text)
+	}
+	
+	
 	makeToolButton(iconSrc, componentClass)
 	{
 		const onClick = () =>
 		{
-			console.log("click")
 			this.props.editor.mouseAddComponentClass = componentClass
 			this.setState({ currentComponent: componentClass })
 		}

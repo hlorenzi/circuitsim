@@ -15,6 +15,25 @@ export class ComponentInductor extends ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "l"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return this.nodes[0] + "," + this.nodes[1] + "," + this.inductance + ","
+	}
+	
+	
+	loadFromString(manager, loadData, reader)
+	{
+		super.loadFromString(manager, loadData, reader)
+		this.inductance = parseFloat(reader.read())
+	}
+	
+	
 	step(manager)
 	{
 		this.stepCurrentAnim(-1)

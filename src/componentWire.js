@@ -11,6 +11,18 @@ export class ComponentWire extends ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "w"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return this.nodes[0] + "," + this.nodes[1] + ","
+	}
+	
+	
 	step(manager)
 	{
 		this.current = manager.getVoltageSourceCurrent(this.voltageSourceIndex)

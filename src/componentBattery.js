@@ -12,6 +12,25 @@ export class ComponentBattery extends ComponentLine
 	}
 	
 	
+	static getSaveId()
+	{
+		return "v"
+	}
+	
+	
+	saveToString(manager)
+	{
+		return this.nodes[0] + "," + this.nodes[1] + "," + this.voltage + ","
+	}
+	
+	
+	loadFromString(manager, loadData, reader)
+	{
+		super.loadFromString(manager, loadData, reader)
+		this.voltage = parseFloat(reader.read())
+	}
+	
+	
 	step(manager)
 	{
 		this.current = manager.getVoltageSourceCurrent(this.voltageSourceIndex)

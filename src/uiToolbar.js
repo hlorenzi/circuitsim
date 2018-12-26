@@ -4,6 +4,7 @@ import { ComponentResistor } from "./componentResistor.js"
 import { ComponentCurrentSource } from "./componentCurrentSource.js"
 import { ComponentCapacitor } from "./componentCapacitor.js"
 import { ComponentInductor } from "./componentInductor.js"
+import { ComponentVoltageSource } from "./componentVoltageSource.js"
 
 
 export class UIToolbar extends React.Component
@@ -27,6 +28,7 @@ export class UIToolbar extends React.Component
 			this.makeToolButton("assets/icon_currentsource.png", ComponentCurrentSource),
 			this.makeToolButton("assets/icon_capacitor.png", ComponentCapacitor),
 			this.makeToolButton("assets/icon_inductor.png", ComponentInductor),
+			this.makeToolButton("assets/icon_voltagesource.png", ComponentVoltageSource),
 		]
 	}
 	

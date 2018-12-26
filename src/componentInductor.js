@@ -68,7 +68,7 @@ export class ComponentInductor extends ComponentLine
 	
 	solverIteration(manager, solver)
 	{
-		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.solverReplacementCurrent - this.solverReplacementCurrentPrev)
+		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.solverReplacementCurrent)
 		this.solverReplacementCurrentPrev = this.solverReplacementCurrent
 	}
 	
@@ -76,8 +76,8 @@ export class ComponentInductor extends ComponentLine
 	solverIterationEnd(manager, solver)
 	{
 		const solverReplacementResistance = (2 * this.inductance) / manager.timePerIteration
-		
 		const voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
+		
 		this.current = voltage / solverReplacementResistance + this.solverReplacementCurrent
 	}
 	

@@ -5,6 +5,7 @@ import { ComponentResistor } from "./componentResistor.js"
 import { ComponentCurrentSource } from "./componentCurrentSource.js"
 import { ComponentCapacitor } from "./componentCapacitor.js"
 import { ComponentInductor } from "./componentInductor.js"
+import { ComponentVoltageSource } from "./componentVoltageSource.js"
 
 
 export class CircuitEditor
@@ -51,13 +52,19 @@ export class CircuitEditor
 		for (const component of this.components)
 			component.step(this)
 		
-		if (this.solver != null && this.solver.readyToStamp && this.components.length > 0)
+		if (this.solver != null && this.solver.readyToRun && this.components.length > 0)
 		{
 			for (const component of this.components)
 				component.solverFrameBegin(this, this.solver)
 			
+			const initialTime = this.time
+			
 			for (let iter = 0; iter < 50; iter++)
 			{
+				this.time = initialTime + iter * this.timePerIteration
+				
+				this.solver.beginIteration()
+				
 				for (const component of this.components)
 					component.solverIterationBegin(this, this.solver)
 				
@@ -73,7 +80,7 @@ export class CircuitEditor
 			for (const component of this.components)
 				component.solverFrameEnd(this, this.solver)
 			
-			this.time += 50 * this.timePerIteration
+			this.time = initialTime + 50 * this.timePerIteration
 		}
 		
 		this.draw()
@@ -546,7 +553,8 @@ export class CircuitEditor
 			ComponentResistor,
 			ComponentCurrentSource,
 			ComponentCapacitor,
-			ComponentInductor
+			ComponentInductor,
+			ComponentVoltageSource
 		]
 		
 		let componentIds = new Map()

@@ -255,6 +255,7 @@ export class ComponentLine
 		grad.addColorStop(0, color1)
 		grad.addColorStop(1, color2)
 		ctx.strokeStyle = grad
+		ctx.fillStyle = grad
 	}
 	
 	

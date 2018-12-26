@@ -9,12 +9,15 @@ export class CircuitSolver
 	constructor()
 	{
 		this.readyToStamp = false
+		this.readyToRun = false
 		
 		this.matrixG = null
 		this.matrixB = null
 		this.matrixC = null
 		this.matrixI = null
 		this.matrixE = null
+		this.matrixIOriginal = null
+		this.matrixEOriginal = null
 		this.matrixA = null
 		this.matrixZ = null
 		this.matrixAPivots = null
@@ -26,6 +29,7 @@ export class CircuitSolver
 	stampBegin(nodeNum, voltNum, groundNodeIndex)
 	{
 		this.readyToStamp = true
+		this.readyToRun = false
 		
 		this.nodeNum = nodeNum
 		this.voltNum = voltNum
@@ -37,6 +41,9 @@ export class CircuitSolver
 		
 		this.matrixI = new Matrix(1, nodeNum)
 		this.matrixE = new Matrix(1, voltNum)
+		
+		this.matrixIOriginal = null
+		this.matrixEOriginal = null
 		
 		this.matrixA = null
 		this.matrixZ = null
@@ -102,6 +109,18 @@ export class CircuitSolver
 			console.log("singular matrix")
 			return
 		}
+		
+		this.matrixIOriginal = this.matrixI.clone()
+		this.matrixEOriginal = this.matrixE.clone()
+		
+		this.readyToRun = true
+	}
+	
+	
+	beginIteration()
+	{
+		this.matrixI = this.matrixIOriginal.clone()
+		this.matrixE = this.matrixEOriginal.clone()
 	}
 	
 	

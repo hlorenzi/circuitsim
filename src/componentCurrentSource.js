@@ -47,12 +47,9 @@ export class ComponentCurrentSource extends ComponentLine
 		const symbolSize = Math.min(50, this.getLength())
 	
 		this.drawSymbolBegin(manager, ctx, symbolSize)
-		
-		let grad = ctx.createLinearGradient(-symbolSize / 2, 0, symbolSize / 2, 0)
-		grad.addColorStop(0, manager.getVoltageColor(manager.getNodeVoltage(this.nodes[0])))
-		grad.addColorStop(1, manager.getVoltageColor(manager.getNodeVoltage(this.nodes[1])))
-		ctx.strokeStyle = grad
-		ctx.fillStyle = grad
+		this.drawSymbolSetGradient(manager, ctx, symbolSize,
+			manager.getVoltageColor(manager.getNodeVoltage(this.nodes[0])),
+			manager.getVoltageColor(manager.getNodeVoltage(this.nodes[1])))
 		
 		const centerX = (this.nodes[0].x + this.nodes[1].x) / 2
 		const centerY = (this.nodes[0].y + this.nodes[1].y) / 2

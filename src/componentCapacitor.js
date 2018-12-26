@@ -12,7 +12,6 @@ export class ComponentCapacitor extends ComponentLine
 		this.current = 0
 		this.solverReplacementCurrent = 0
 		this.solverReplacementCurrentPrev = 0
-		this.voltage = 1e-3
 	}
 	
 	
@@ -46,7 +45,6 @@ export class ComponentCapacitor extends ComponentLine
 		this.current = 0
 		this.solverReplacementCurrent = 0
 		this.solverReplacementCurrentPrev = 0
-		this.voltage = 1e-3
 		
 		const solverReplacementResistance = manager.timePerIteration / (2 * this.capacitance)
 		solver.stampResistance(this.nodes[0], this.nodes[1], solverReplacementResistance)
@@ -55,21 +53,22 @@ export class ComponentCapacitor extends ComponentLine
 	
 	solverBegin(manager, solver)
 	{
-		this.voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
+		
 	}
 	
 	
 	solverIterationBegin(manager, solver)
 	{
 		const solverReplacementResistance = manager.timePerIteration / (2 * this.capacitance)
+		const voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
 		
-		this.solverReplacementCurrent = -this.voltage / solverReplacementResistance - this.current
+		this.solverReplacementCurrent = -voltage / solverReplacementResistance - this.current
 	}
 	
 	
 	solverIteration(manager, solver)
 	{
-		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.solverReplacementCurrent - this.solverReplacementCurrentPrev)
+		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.solverReplacementCurrent)
 		this.solverReplacementCurrentPrev = this.solverReplacementCurrent
 	}
 	
@@ -77,9 +76,9 @@ export class ComponentCapacitor extends ComponentLine
 	solverIterationEnd(manager, solver)
 	{
 		const solverReplacementResistance = manager.timePerIteration / (2 * this.capacitance)
+		const voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
 		
-		this.voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
-		this.current = this.voltage / solverReplacementResistance + this.solverReplacementCurrent
+		this.current = voltage / solverReplacementResistance + this.solverReplacementCurrent
 	}
 	
 	

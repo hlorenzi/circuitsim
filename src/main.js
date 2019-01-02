@@ -14,9 +14,6 @@ document.body.onload = function()
 	if (urlData != null)
 		gEditor.loadFromString(urlData)
 	
-	onResize()
-	window.onresize = (ev) => onResize()
-	
 	const saveToURL = () =>
 	{
 		let urlWithoutQuery = [location.protocol, "//", location.host, location.pathname].join("")
@@ -24,13 +21,17 @@ document.body.onload = function()
 	}
 	
 	ReactDOM.render(React.createElement(UIToolbar, { editor: gEditor, saveToURL }), document.getElementById("divToolbox"))
+	
+	onResize()
+	document.body.onresize = (ev) => onResize()
 }
 
 
 function onResize()
 {
 	const divEditor = document.getElementById("divEditor")
-	gEditor.resize(divEditor.clientWidth, divEditor.clientHeight)
+	const rect = divEditor.getBoundingClientRect()
+	gEditor.resize(Math.floor(rect.width), Math.floor(rect.height))
 }
 
 

@@ -394,19 +394,24 @@ export class CircuitEditor
 	
 	getVoltageColor(voltage)
 	{
+		const gray = 160
+		
 		if (!voltage)
-			return "#fff"
-		else if (voltage > 0)
+			return "rgb(" + gray + "," + gray + "," + gray + ")"
+		
+		if (voltage > 0)
 		{
 			const factor = Math.min(1, voltage / 10)
-			const c = Math.floor(255 - factor * 255)
-			return "rgb(" + c + ",255," + c + ")"
+			const cGreen = Math.floor(gray + factor * (255 - gray))
+			const cOther = Math.floor(gray - factor * gray)
+			return "rgb(" + cOther + "," + cGreen + "," + cOther + ")"
 		}
 		else
 		{
 			const factor = Math.min(1, -voltage / 10)
-			const c = Math.floor(255 - factor * 255)
-			return "rgb(255," + c + "," + c + ")"
+			const cRed   = Math.floor(gray + factor * (255 - gray))
+			const cOther = Math.floor(gray - factor * gray)
+			return "rgb(" + cRed + "," + cOther + "," + cOther + ")"
 		}
 	}
 	
@@ -482,7 +487,6 @@ export class CircuitEditor
 	
 	drawNodeVoltages()
 	{
-		this.ctx.fillStyle = "#00ff00"
 		this.ctx.font = "15px Verdana"
 		this.ctx.textBaseline = "middle"
 		
@@ -504,6 +508,7 @@ export class CircuitEditor
 			const v = this.getNodeVoltage(node.index)
 			const str = (Math.round(v * 1000) / 1000).toString() + " V"
 			
+			this.ctx.fillStyle = this.getVoltageColor(v)
 			this.ctx.fillText(str, node.pos.x + xOffset, node.pos.y + yOffset)
 		}
 	}

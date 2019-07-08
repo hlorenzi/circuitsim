@@ -48,9 +48,10 @@ export class ComponentResistor extends ComponentLine
 	
 	draw(manager, ctx)
 	{
-		const symbolSize      = Math.min(75, this.getLength())
-		const symbolAmplitude = 12.5
-		const symbolSegments  = 9
+		const symbolSize        = Math.min(75, this.getLength())
+		const symbolAmplitude   = 12.5
+		const symbolSegments    = 9
+		const symbolSegmentSize = symbolSize / symbolSegments
 	
 		this.drawSymbolBegin(manager, ctx, symbolSize)
 		this.drawSymbolSetGradient(manager, ctx, symbolSize,
@@ -59,16 +60,19 @@ export class ComponentResistor extends ComponentLine
 		
 		ctx.beginPath()
 		ctx.moveTo(-symbolSize / 2, 0)
+		ctx.lineTo(-symbolSize / 2 + symbolSegmentSize / 2, 0)
 		
 		let segmentX    = -symbolSize / 2
 		let segmentSide = 1
-		for (let i = 0; i < symbolSegments; i++)
+		for (let i = 0; i < symbolSegments - 1; i++)
 		{
-			segmentX    += symbolSize / symbolSegments
+			segmentX    += symbolSegmentSize
 			segmentSide *= -1
-			ctx.lineTo(segmentX, (i == symbolSegments - 1 ? 0 : symbolAmplitude * segmentSide))
+			ctx.lineTo(segmentX, symbolAmplitude * segmentSide)
 		}
 		
+		ctx.lineTo(symbolSize / 2 - symbolSegmentSize / 2, 0)
+		ctx.lineTo(symbolSize / 2, 0)
 		ctx.stroke()
 		
 		this.drawSymbolEnd(manager, ctx)

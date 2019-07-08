@@ -20,7 +20,7 @@ export class CircuitEditor
 		this.tileSize = 25
 		
 		this.time = 0
-		this.timePerIteration = 5e-6
+		this.timePerIteration = 1e-6
 		
 		this.components = []
 		
@@ -44,43 +44,53 @@ export class CircuitEditor
 		window.onkeydown = (ev) => this.onKeyDown(ev)
 		
 		this.debugDrawClean = false
+		
+		this.debugSkipIterationFrames = 0
+		this.debugSkipIterationFramesCur = 0
 	}
 	
 	
 	run()
 	{
-		for (const component of this.components)
-			component.step(this)
-		
-		if (this.solver != null && this.solver.readyToRun && this.components.length > 0)
+		this.debugSkipIterationFramesCur++
+		if (this.debugSkipIterationFramesCur >= this.debugSkipIterationFrames)
 		{
+			this.debugSkipIterationFramesCur = 0
+			
 			for (const component of this.components)
-				component.solverFrameBegin(this, this.solver)
+				component.step(this)
 			
-			const initialTime = this.time
-			
-			for (let iter = 0; iter < 50; iter++)
+			if (this.solver != null && this.solver.readyToRun && this.components.length > 0)
 			{
-				this.time = initialTime + iter * this.timePerIteration
+				for (const component of this.components)
+					component.solverFrameBegin(this, this.solver)
 				
-				this.solver.beginIteration()
+				const iters = 50
+				const initialTime = this.time
+				
+				for (let iter = 0; iter < iters; iter++)
+				{
+					this.time = initialTime + iter * this.timePerIteration
+					
+					this.solver.beginIteration()
+					
+					for (const component of this.components)
+						component.solverIterationBegin(this, this.solver)
+					
+					for (const component of this.components)
+						component.solverIteration(this, this.solver)
+					
+					this.solver.solve()
+					
+					for (const component of this.components)
+						component.solverIterationEnd(this, this.solver)
+				}
 				
 				for (const component of this.components)
-					component.solverIterationBegin(this, this.solver)
+					component.solverFrameEnd(this, this.solver)
 				
-				for (const component of this.components)
-					component.solverIteration(this, this.solver)
-				
-				this.solver.solve()
-				
-				for (const component of this.components)
-					component.solverIterationEnd(this, this.solver)
+				this.time = initialTime + iters * this.timePerIteration
 			}
-			
-			for (const component of this.components)
-				component.solverFrameEnd(this, this.solver)
-			
-			this.time = initialTime + 50 * this.timePerIteration
 		}
 		
 		this.draw()
@@ -363,7 +373,7 @@ export class CircuitEditor
 			component.stamp(this, this.solver)
 		
 		this.solver.stampEnd()
-		this.solver.solve()
+		//this.solver.solve()
 		
 		for (const component of this.components)
 			component.solverBegin(this, this.solver)

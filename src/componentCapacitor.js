@@ -7,11 +7,11 @@ export class ComponentCapacitor extends ComponentLine
 	{
 		super(pos)
 		
-		this.capacitance = 1e-5
+		this.capacitance = 1e-6
 		
-		this.current = 0
-		this.solverReplacementCurrent = 0
-		this.solverReplacementCurrentPrev = 0
+		this.useTrapezoidalIntegration = true
+		this.companionModelResistance = 0
+		this.companionModelCurrent = 0
 	}
 	
 	
@@ -43,42 +43,48 @@ export class ComponentCapacitor extends ComponentLine
 	stamp(manager, solver)
 	{
 		this.current = 0
-		this.solverReplacementCurrent = 0
-		this.solverReplacementCurrentPrev = 0
+		this.currentAnim = 0
+		this.companionModelCurrent = 0
 		
-		const solverReplacementResistance = manager.timePerIteration / (2 * this.capacitance)
-		solver.stampResistance(this.nodes[0], this.nodes[1], solverReplacementResistance)
-	}
-	
-	
-	solverBegin(manager, solver)
-	{
-		
+		if (this.useTrapezoidalIntegration)
+		{
+			this.companionModelResistance = manager.timePerIteration / (2 * this.capacitance)
+			solver.stampResistance(this.nodes[0], this.nodes[1], this.companionModelResistance)
+			//console.log("comp resistance (trapezoidal)", this.companionModelResistance)
+		}
+		else
+		{
+			this.companionModelResistance = manager.timePerIteration / this.capacitance
+			solver.stampResistance(this.nodes[0], this.nodes[1], this.companionModelResistance)
+			//console.log("comp resistance (back euler)", this.companionModelResistance)
+		}
 	}
 	
 	
 	solverIterationBegin(manager, solver)
 	{
-		const solverReplacementResistance = manager.timePerIteration / (2 * this.capacitance)
 		const voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
 		
-		this.solverReplacementCurrent = -voltage / solverReplacementResistance - this.current
-	}
-	
-	
-	solverIteration(manager, solver)
-	{
-		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.solverReplacementCurrent)
-		this.solverReplacementCurrentPrev = this.solverReplacementCurrent
+		if (this.useTrapezoidalIntegration)
+		{
+			this.companionModelCurrent = -voltage / this.companionModelResistance - this.current
+			solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.companionModelCurrent)
+			//console.log("voltage, comp current (trapezoidal)", voltage, this.companionModelCurrent)
+		}
+		else
+		{
+			this.companionModelCurrent = -voltage / this.companionModelResistance
+			solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.companionModelCurrent)
+			//console.log("voltage, comp current (back euler)", voltage, this.companionModelCurrent)
+		}
 	}
 	
 	
 	solverIterationEnd(manager, solver)
 	{
-		const solverReplacementResistance = manager.timePerIteration / (2 * this.capacitance)
 		const voltage = manager.getNodeVoltage(this.nodes[0]) - manager.getNodeVoltage(this.nodes[1])
 		
-		this.current = voltage / solverReplacementResistance + this.solverReplacementCurrent
+		this.current = voltage / this.companionModelResistance + this.companionModelCurrent
 	}
 	
 	

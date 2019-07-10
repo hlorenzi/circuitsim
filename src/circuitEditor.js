@@ -506,7 +506,7 @@ export class CircuitEditor
 				this.ctx.textAlign = "right"
 			
 			const v = this.getNodeVoltage(node.index)
-			const str = (Math.round(v * 1000) / 1000).toString() + " V"
+			const str = v.toFixed(3) + " V"
 			
 			this.ctx.fillStyle = this.getVoltageColor(v)
 			this.ctx.fillText(str, node.pos.x + xOffset, node.pos.y + yOffset)

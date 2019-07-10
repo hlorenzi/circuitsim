@@ -1,3 +1,4 @@
+import React from "react"
 import { ComponentWire } from "./componentWire.js"
 import { ComponentBattery } from "./componentBattery.js"
 import { ComponentResistor } from "./componentResistor.js"
@@ -20,7 +21,7 @@ export class UIToolbar extends React.Component
 	{
 		return [
 			this.makeMenuItem("Save to URL", this.props.saveToURL),
-			React.createElement("br"),
+			<br/>,
 			this.makeToolButton("assets/icon_grab.png", null),
 			this.makeToolButton("assets/icon_wire.png", ComponentWire),
 			this.makeToolButton("assets/icon_battery.png", ComponentBattery),
@@ -35,9 +36,7 @@ export class UIToolbar extends React.Component
 	
 	makeMenuItem(text, onClick)
 	{
-		return React.createElement("a",
-			{ className: "buttonMenu", onClick },
-			text)
+		return <a className="buttonMenu" onClick={ onClick }>{ text }</a>
 	}
 	
 	
@@ -51,11 +50,10 @@ export class UIToolbar extends React.Component
 		
 		const isCurrent = (this.state.currentComponent == componentClass)
 		
-		return React.createElement("button",
-			{ className: "buttonTool" + (isCurrent ? " buttonToolSelected" : ""), onClick },
-			React.createElement(
-				"img",
-				{ className: "buttonToolIcon", src: iconSrc })
-		)
+		return <button
+			className={ "buttonTool" + (isCurrent ? " buttonToolSelected" : "") }
+			onClick={ onClick }>
+				<img className="buttonToolIcon" src={ iconSrc }/>
+			</button>
 	}
 }

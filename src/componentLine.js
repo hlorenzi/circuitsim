@@ -1,3 +1,6 @@
+import * as MathUtils from "./math.js"
+
+
 export class ComponentLine
 {
 	constructor(p)
@@ -18,6 +21,12 @@ export class ComponentLine
 	static getSaveId()
 	{
 		return "-"
+	}
+	
+	
+	static getName()
+	{
+		return ""
 	}
 	
 	
@@ -194,6 +203,23 @@ export class ComponentLine
 	}
 	
 	
+	getBBox()
+	{
+		const xMin = Math.min(this.points[0].x, this.points[1].x)
+		const xMax = Math.max(this.points[0].x, this.points[1].x)
+		const yMin = Math.min(this.points[0].y, this.points[1].y)
+		const yMax = Math.max(this.points[0].y, this.points[1].y)
+		
+		return { xMin, xMax, yMin, yMax }
+	}
+	
+	
+	getEditBox(editBoxDef)
+	{
+		
+	}
+	
+	
 	draw(manager, ctx)
 	{
 		ctx.save()
@@ -367,5 +393,31 @@ export class ComponentLine
 		}
 
 		ctx.restore()
+	}
+	
+	
+	drawRatingText(manager, ctx, value, unit, xDistance = 35, yDistance = 35)
+	{
+		ctx.font = "15px Verdana"
+		ctx.textBaseline = "middle"
+		
+		const labelDirection = this.getOutgoingDirectionFromNode(1) + Math.PI / 2
+		
+		const xCenter = (this.points[0].x + this.points[1].x) / 2
+		const yCenter = (this.points[0].y + this.points[1].y) / 2
+		const xOffset = xDistance *  Math.cos(labelDirection)
+		const yOffset = yDistance * -Math.sin(labelDirection)
+		
+		if (Math.abs(xOffset) < Math.abs(yOffset) * 0.1)
+			ctx.textAlign = "center"
+		else if (xOffset > 0)
+			ctx.textAlign = "left"
+		else
+			ctx.textAlign = "right"
+		
+		const str = MathUtils.valueToStringWithUnitPrefix(value, " ") + unit
+			
+		ctx.fillStyle = "#fff"
+		ctx.fillText(str, xCenter + xOffset, yCenter + yOffset)
 	}
 }

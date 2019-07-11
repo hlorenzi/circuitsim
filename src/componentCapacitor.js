@@ -21,6 +21,12 @@ export class ComponentCapacitor extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Capacitor"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + "," + this.capacitance + ","
@@ -88,6 +94,12 @@ export class ComponentCapacitor extends ComponentLine
 	}
 	
 	
+	getEditBox(editBoxDef)
+	{
+		editBoxDef.addNumberUnitInput("Capacitance", "F", this.capacitance, (x) => { this.capacitance = x })
+	}
+	
+	
 	draw(manager, ctx)
 	{
 		const symbolSize = Math.min(15, this.getLength())
@@ -108,5 +120,6 @@ export class ComponentCapacitor extends ComponentLine
 		ctx.stroke()
 		
 		this.drawSymbolEnd(manager, ctx)
+		this.drawRatingText(manager, ctx, this.capacitance, "F")
 	}
 }

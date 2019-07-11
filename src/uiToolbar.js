@@ -19,18 +19,18 @@ export class UIToolbar extends React.Component
 	
 	render()
 	{
-		return [
-			this.makeMenuItem("Save to URL", this.props.saveToURL),
-			<br/>,
-			this.makeToolButton("assets/icon_grab.png", null),
-			this.makeToolButton("assets/icon_wire.png", ComponentWire),
-			this.makeToolButton("assets/icon_battery.png", ComponentBattery),
-			this.makeToolButton("assets/icon_resistor.png", ComponentResistor),
-			this.makeToolButton("assets/icon_currentsource.png", ComponentCurrentSource),
-			this.makeToolButton("assets/icon_capacitor.png", ComponentCapacitor),
-			this.makeToolButton("assets/icon_inductor.png", ComponentInductor),
-			this.makeToolButton("assets/icon_voltagesource.png", ComponentVoltageSource),
-		]
+		return <React.Fragment>
+			{ this.makeMenuItem("Save to URL", this.props.saveToURL) }
+			<br/>
+			{ this.makeToolButton("assets/icon_grab.png", null) }
+			{ this.makeToolButton("assets/icon_wire.png", ComponentWire) }
+			{ this.makeToolButton("assets/icon_battery.png", ComponentBattery) }
+			{ this.makeToolButton("assets/icon_resistor.png", ComponentResistor) }
+			{ this.makeToolButton("assets/icon_currentsource.png", ComponentCurrentSource) }
+			{ this.makeToolButton("assets/icon_capacitor.png", ComponentCapacitor) }
+			{ this.makeToolButton("assets/icon_inductor.png", ComponentInductor) }
+			{ this.makeToolButton("assets/icon_voltagesource.png", ComponentVoltageSource) }
+		</React.Fragment>
 	}
 	
 	
@@ -51,7 +51,9 @@ export class UIToolbar extends React.Component
 		const isCurrent = (this.state.currentComponent == componentClass)
 		
 		return <button
+			key={ iconSrc }
 			className={ "buttonTool" + (isCurrent ? " buttonToolSelected" : "") }
+			title={ componentClass ? componentClass.getName() : "Grab/Move" }
 			onClick={ onClick }>
 				<img className="buttonToolIcon" src={ iconSrc }/>
 			</button>

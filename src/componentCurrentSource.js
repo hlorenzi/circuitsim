@@ -17,6 +17,12 @@ export class ComponentCurrentSource extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Current Source"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + "," + this.current + ","
@@ -39,6 +45,12 @@ export class ComponentCurrentSource extends ComponentLine
 	stamp(manager, solver)
 	{
 		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.current)
+	}
+	
+	
+	getEditBox(editBoxDef)
+	{
+		editBoxDef.addNumberUnitInput("Current", "A", this.current, (x) => { this.current = x })
 	}
 	
 	
@@ -71,5 +83,6 @@ export class ComponentCurrentSource extends ComponentLine
 		ctx.fill()
 		
 		this.drawSymbolEnd(manager, ctx)
+		this.drawRatingText(manager, ctx, this.current, "A")
 	}
 }

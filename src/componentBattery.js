@@ -18,6 +18,12 @@ export class ComponentBattery extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Battery"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + "," + this.voltage + ","
@@ -44,6 +50,12 @@ export class ComponentBattery extends ComponentLine
 	}
 	
 	
+	getEditBox(editBoxDef)
+	{
+		editBoxDef.addNumberUnitInput("Voltage", "V", this.voltage, (x) => { this.voltage = x })
+	}
+	
+	
 	draw(manager, ctx)
 	{
 		const symbolSize     = Math.min(15, this.getLength())
@@ -65,5 +77,6 @@ export class ComponentBattery extends ComponentLine
 		ctx.stroke()
 		
 		this.drawSymbolEnd(manager, ctx)
+		this.drawRatingText(manager, ctx, this.voltage, "V")
 	}
 }

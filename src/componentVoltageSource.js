@@ -23,6 +23,12 @@ export class ComponentVoltageSource extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Voltage Source"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + ",0," +
@@ -69,9 +75,18 @@ export class ComponentVoltageSource extends ComponentLine
 	}
 	
 	
+	getEditBox(editBoxDef)
+	{
+		editBoxDef.addNumberUnitInput("Amplitude",    "V",   this.amplitude,   (x) => { this.amplitude = x })
+		editBoxDef.addNumberUnitInput("DC Bias",      "V",   this.dcBias,      (x) => { this.dcBias = x })
+		editBoxDef.addNumberUnitInput("Frequency",    "Hz",  this.frequency,   (x) => { this.frequency = x })
+		editBoxDef.addNumberUnitInput("Phase Offset", "rad", this.phaseOffset, (x) => { this.phaseOffset = x })
+	}
+	
+	
 	draw(manager, ctx)
 	{
-		const symbolSize     = Math.min(50, this.getLength())
+		const symbolSize = Math.min(50, this.getLength())
 	
 		const centerX = (this.points[0].x + this.points[1].x) / 2
 		const centerY = (this.points[0].y + this.points[1].y) / 2

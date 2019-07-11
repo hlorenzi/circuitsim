@@ -10,6 +10,7 @@
 	<body>
 		<div id="divMain">
 			<div id="divToolbox"></div>
+			<div id="divFloatingEditBox"></div>
 			<div id="divEditor">
 				<canvas id="canvasMain" width="1280" height="720"></canvas>
 			</div>
@@ -47,6 +48,11 @@
 			background-color: #223;
 			border-bottom: 1px solid #668;
 			padding: 0.5em;
+		}
+		
+		#divFloatingEditBox
+		{
+			position: absolute;
 		}
 		
 		#divEditor

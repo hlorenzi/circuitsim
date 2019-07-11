@@ -17,6 +17,12 @@ export class ComponentResistor extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Resistor"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + "," + this.resistance + ","
@@ -43,6 +49,12 @@ export class ComponentResistor extends ComponentLine
 	stamp(manager, solver)
 	{
 		solver.stampResistance(this.nodes[0], this.nodes[1], this.resistance)
+	}
+	
+	
+	getEditBox(editBoxDef)
+	{
+		editBoxDef.addNumberUnitInput("Resistance", "Ω", this.resistance, (x) => { this.resistance = x })
 	}
 	
 	
@@ -76,5 +88,6 @@ export class ComponentResistor extends ComponentLine
 		ctx.stroke()
 		
 		this.drawSymbolEnd(manager, ctx)
+		this.drawRatingText(manager, ctx, this.resistance, "Ω", 25)
 	}
 }

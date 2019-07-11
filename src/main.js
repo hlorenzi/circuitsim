@@ -2,6 +2,7 @@ import React from "react"
 import ReactDOM from "react-dom"
 import { CircuitEditor } from "./circuitEditor.js"
 import { UIToolbar } from "./uiToolbar.js"
+import { UIEditBox } from "./uiEditBox.js"
 
 
 let gEditor = null
@@ -16,16 +17,18 @@ document.body.onload = function()
 	if (urlData != null)
 		gEditor.loadFromString(urlData)
 	
-	const saveToURL = () =>
-	{
-		let urlWithoutQuery = [location.protocol, "//", location.host, location.pathname].join("")
-		window.location = urlWithoutQuery + "?circuit=" + gEditor.saveToString()
-	}
+	ReactDOM.render(<UIToolbar editor={ gEditor } saveToURL={ saveToURL }/>, document.getElementById("divToolbox"))
 	
-	ReactDOM.render(React.createElement(UIToolbar, { editor: gEditor, saveToURL }), document.getElementById("divToolbox"))
+	gEditor.refreshUI = refreshUI
 	
 	onResize()
 	document.body.onresize = (ev) => onResize()
+}
+
+
+function refreshUI()
+{
+	ReactDOM.render(<UIEditBox editor={ gEditor } onChange={ () => { gEditor.refreshSolver(); refreshUI() } }/>, document.getElementById("divFloatingEditBox"))
 }
 
 
@@ -34,6 +37,13 @@ function onResize()
 	const divEditor = document.getElementById("divEditor")
 	const rect = divEditor.getBoundingClientRect()
 	gEditor.resize(Math.floor(rect.width), Math.floor(rect.height))
+}
+
+
+function saveToURL()
+{
+	const url = [location.protocol, "//", location.host, location.pathname].join("")
+	window.location = url + "?circuit=" + gEditor.saveToString()
 }
 
 

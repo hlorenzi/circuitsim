@@ -17,6 +17,12 @@ export class ComponentWire extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Wire"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + ","

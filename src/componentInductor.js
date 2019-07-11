@@ -21,6 +21,12 @@ export class ComponentInductor extends ComponentLine
 	}
 	
 	
+	static getName()
+	{
+		return "Inductor"
+	}
+	
+	
 	saveToString(manager)
 	{
 		return this.nodes[0] + "," + this.nodes[1] + "," + this.inductance + ","
@@ -88,6 +94,12 @@ export class ComponentInductor extends ComponentLine
 	}
 	
 	
+	getEditBox(editBoxDef)
+	{
+		editBoxDef.addNumberUnitInput("Inductance", "H", this.inductance, (x) => { this.inductance = x })
+	}
+	
+	
 	draw(manager, ctx)
 	{
 		const symbolSize   = Math.min(75, this.getLength())
@@ -110,13 +122,14 @@ export class ComponentInductor extends ComponentLine
 			const arcX2 = -symbolSize / 2 + symbolSize / arcNum * (arc + 1)
 			
 			ctx.bezierCurveTo(
-				arcX1, -arcAmplitude,
-				arcX2, -arcAmplitude,
+				arcX1, arcAmplitude,
+				arcX2, arcAmplitude,
 				arcX2, 0)
 		}
 		
 		ctx.stroke()
 		
 		this.drawSymbolEnd(manager, ctx)
+		this.drawRatingText(manager, ctx, this.inductance, "H", 25)
 	}
 }

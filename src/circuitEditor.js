@@ -23,6 +23,7 @@ export class CircuitEditor
 		this.timePerIteration = 1e-6
 		
 		this.components = []
+		this.componentsForEditing = []
 		
 		this.solver = new CircuitSolver()
 		this.nodes = new Map()
@@ -41,7 +42,11 @@ export class CircuitEditor
 		this.canvas.onmousemove = (ev) => this.onMouseMove(ev)
 		this.canvas.onmouseup   = (ev) => this.onMouseUp  (ev)
 		
+		this.canvas.oncontextmenu = (ev) => ev.preventDefault()
+		
 		window.onkeydown = (ev) => this.onKeyDown(ev)
+		
+		this.refreshUI = () => { }
 		
 		this.debugDrawClean = false
 		
@@ -110,6 +115,16 @@ export class CircuitEditor
 	}
 	
 	
+	getAbsolutePosition(pos)
+	{
+		const rect = this.canvas.getBoundingClientRect()
+		return {
+			x: pos.x + rect.left,
+			y: pos.y + rect.top
+		}
+	}
+	
+	
 	getMousePos(ev)
 	{
 		const rect = this.canvas.getBoundingClientRect()
@@ -141,11 +156,17 @@ export class CircuitEditor
 		this.mouseDragOrigin = pos
 		
 		this.mouseDown = true
+		this.componentsForEditing = []
 		
 		if (!ev.ctrlKey)// && (this.mouseCurrentHoverComponent == null || !this.mouseCurrentHoverComponent.isAnySelected()))
 			this.unselectAll()
 		
-		if (this.mouseAddComponentClass != null)
+		if (ev.button != 0 && this.mouseCurrentHoverComponent != null)
+		{
+			this.componentsForEditing = [this.mouseCurrentHoverComponent]
+		}
+		
+		else if (this.mouseAddComponentClass != null)
 		{
 			this.mouseCurrentAction = "drag"
 			
@@ -192,6 +213,7 @@ export class CircuitEditor
 			}
 		}
 		
+		this.refreshUI()
 		this.draw()
 	}
 	
@@ -220,6 +242,7 @@ export class CircuitEditor
 			}
 		
 			this.refreshNodes()
+			this.draw()
 		}
 		
 		else if (this.mouseAddComponentClass == null)

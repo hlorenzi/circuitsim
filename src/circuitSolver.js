@@ -103,12 +103,21 @@ export class CircuitSolver
 		//console.log(this.matrixA.toString())
 		//console.log(this.matrixZ.toString())
 		
-		this.matrixAPivots = this.matrixA.luFactor()
+		//console.log("matrixA:")
+		//console.log(this.matrixA.toString())
+		
+		this.matrixAPivots = this.matrixA.luDecompose()
 		if (this.matrixAPivots == null)
 		{
 			console.log("singular matrix")
 			return
 		}
+		
+		//console.log("matrixA decomposed:")
+		//console.log(this.matrixA.toString())
+		//console.log("matrixA pivots:")
+		//console.log(this.matrixAPivots.toString())
+		
 		
 		this.matrixIOriginal = this.matrixI.clone()
 		this.matrixEOriginal = this.matrixE.clone()

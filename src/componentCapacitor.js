@@ -56,6 +56,7 @@ export class ComponentCapacitor extends ComponentLine
 		{
 			this.companionModelResistance = manager.timePerIteration / (2 * this.capacitance)
 			solver.stampResistance(this.nodes[0], this.nodes[1], this.companionModelResistance)
+			//console.log("comp resistance (trapezoidal)", manager.timePerIteration, this.capacitance)
 			//console.log("comp resistance (trapezoidal)", this.companionModelResistance)
 		}
 		else

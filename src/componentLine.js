@@ -293,7 +293,7 @@ export class ComponentLine
 	
 	drawCurrent(manager, ctx)
 	{
-		if (this.current == 0 || manager.debugDrawClean)
+		if (manager.debugDrawClean)
 			return
 		
 		ctx.save()
@@ -302,8 +302,8 @@ export class ComponentLine
 		ctx.lineCap     = "round"
 		ctx.strokeStyle = "#ff0"
 		
-		ctx.lineDashOffset = 27.5 * this.currentAnim
-		ctx.setLineDash([2.5, 25])
+		ctx.lineDashOffset = 47.5 * this.currentAnim
+		ctx.setLineDash([2.5, 45])
 		
 		ctx.beginPath()
 		ctx.moveTo(this.points[0].x, this.points[0].y)

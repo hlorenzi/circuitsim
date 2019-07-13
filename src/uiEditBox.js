@@ -92,7 +92,7 @@ export function UIEditBox(props)
 			top: absolutePos.y + "px",
 			height: "0",
 		}}>
-			<div style={{
+			<div onContextMenu={ (ev) => ev.preventDefault() } style={{
 				position: "relative",
 				whiteSpace: "nowrap",
 				top: "50%",

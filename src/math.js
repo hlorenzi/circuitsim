@@ -19,6 +19,8 @@ export function valueToStringWithUnitPrefix(x, separator = "")
 			prefixIndex += 1
 		}
 		
+		xAbs = Math.round(xAbs * 1000) / 1000
+		
 		return (xAbs * sign).toString() + separator + multiplierPrefixes[prefixIndex]
 	}
 	
@@ -30,6 +32,8 @@ export function valueToStringWithUnitPrefix(x, separator = "")
 			xAbs *= 1000
 			prefixIndex += 1
 		}
+		
+		xAbs = Math.round(xAbs * 1000) / 1000
 		
 		return (xAbs * sign).toString() + separator + dividerPrefixes[prefixIndex]
 	}

@@ -31,7 +31,7 @@ export class ComponentVoltageSource extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.nodes[0] + "," + this.nodes[1] + ",0," +
+		return this.joints[0] + "," + this.joints[1] + ",0," +
 			this.dcBias + "," +
 			this.frequency + "," +
 			this.amplitude + "," +

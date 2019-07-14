@@ -1,4 +1,6 @@
 import { CircuitSolver } from "./circuitSolver.js"
+import { ComponentSingleEnded } from "./componentSingleEnded.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 import { ComponentWire } from "./componentWire.js"
 import { ComponentBattery } from "./componentBattery.js"
 import { ComponentResistor } from "./componentResistor.js"
@@ -6,6 +8,7 @@ import { ComponentCurrentSource } from "./componentCurrentSource.js"
 import { ComponentCapacitor } from "./componentCapacitor.js"
 import { ComponentInductor } from "./componentInductor.js"
 import { ComponentVoltageSource } from "./componentVoltageSource.js"
+import { ComponentGround } from "./componentGround.js"
 
 
 export class CircuitEditor
@@ -26,7 +29,8 @@ export class CircuitEditor
 		this.componentsForEditing = []
 		
 		this.solver = new CircuitSolver()
-		this.nodes = new Map()
+		this.joints = new Map()
+		this.nodes = []
 		this.groundNodeIndex = -1
 		this.voltageSources = 0
 		
@@ -317,56 +321,105 @@ export class CircuitEditor
 	
 	refreshNodes()
 	{
-		this.nodes = new Map()
-		this.groundNodeIndex = -1
+		this.joints = new Map()
+		this.nodes = [{}]
+		this.groundNodeIndex = 0
 		this.voltageSources = 0
 		
+		const jointKey = (p) => p.x / this.tileSize * 1000 + p.y / this.tileSize
+		
+		// Assign ground nodes.
+		let hasGround = false
+		for (let component of this.components)
+		{
+			if (component instanceof ComponentGround)
+			{
+				hasGround = true
+				//const joint = { jointIndex: this.joints.size, nodeIndex: 0, pos: component.points[0], outgoingDirections: [], labelDirection: 0, visible: true }
+				//this.joints.set(jointKey(component.points[0]), joint)
+			}
+		}
+		
+		// Assign ground node to a voltage source if no ground components.
+		if (!hasGround)
+		{
+			for (let component of this.components)
+			{
+				if (component instanceof ComponentBattery || component instanceof ComponentVoltageSource)
+				{
+					const key = jointKey(component.points[0])
+					
+					let joint = this.joints.get(key)
+					if (!joint)
+					{
+						joint = { jointIndex: this.joints.size, nodeIndex: 0, pos: component.points[0], outgoingDirections: [], labelDirection: 0, visible: true }
+						this.joints.set(key, joint)
+					}
+					
+					break
+				}
+			}
+		}
+		
+		// Assign joints.
 		for (let component of this.components)
 		{
 			if (component.isVoltageSource)
 				component.voltageSourceIndex = (this.voltageSources++)
-				
+			
 			for (let i = 0; i < component.points.length; i++)
 			{
-				const key = component.points[i].x / this.tileSize * 1000 + component.points[i].y / this.tileSize
+				const key = jointKey(component.points[i])
 				
-				let node = this.nodes.get(key)
-				if (!node)
+				let joint = this.joints.get(key)
+				if (!joint)
 				{
-					node = { index: this.nodes.size, pos: component.points[i], outgoingDirections: [], labelDirection: 0, visible: true }
-					this.nodes.set(key, node)
+					joint = { jointIndex: this.joints.size, nodeIndex: -1, pos: component.points[i], outgoingDirections: [], labelDirection: 0, visible: true }
+					this.joints.set(key, joint)
 				}
 				
-				component.nodes[i] = node.index
-				node.outgoingDirections.push(component.getOutgoingDirectionFromNode(i))
+				joint.outgoingDirections.push(component.getOutgoingDirectionFromNode(i))
 			}
+		}
+		
+		// Assign nodes to joints.
+		for (let component of this.components)
+		{
+			for (let i = 0; i < component.points.length; i++)
+			{
+				const isNode = !(i == 1 && component instanceof ComponentSingleEnded)
 				
-			if (this.groundNodeIndex == -1 && component.isVoltageSource && component.voltage)
-				this.groundNodeIndex = component.nodes[0]
+				const key = jointKey(component.points[i])
+				
+				let joint = this.joints.get(key)
+				if (isNode && joint.nodeIndex < 0)
+				{
+					joint.nodeIndex = this.nodes.length
+					this.nodes.push({})
+				}
+				
+				component.nodes[i] = joint.nodeIndex
+				component.joints[i] = joint.jointIndex
+			}
 		}
 		
-		if (this.groundNodeIndex == -1)
+		// Find voltage label position for joints.
+		for (let [key, joint] of this.joints)
 		{
-			this.groundNodeIndex = this.nodes.size
-			this.nodes.set(0, { index: this.nodes.size, pos: { x: -1, y: -1 }, outgoingDirections: [], labelDirection: 0, visible: false })
-		}
-		
-		for (let [key, node] of this.nodes)
-		{
-			if (node.outgoingDirections.length == 1)
-				node.labelDirection = node.outgoingDirections[0] + Math.PI
+			if (joint.outgoingDirections.length == 1)
+				joint.labelDirection = joint.outgoingDirections[0] + Math.PI
 			
 			else
 			{
-				node.outgoingDirections.sort((a, b) => a - b)
+				joint.outgoingDirections.sort((a, b) => a - b)
 				
 				let biggestGapSize = 0
-				for (let i = 0; i < node.outgoingDirections.length; i++)
+				for (let i = 0; i < joint.outgoingDirections.length; i++)
 				{
-					const iNext = (i + 1) % node.outgoingDirections.length
+					const iNext = (i + 1) % joint.outgoingDirections.length
 					
-					const curDir  = node.outgoingDirections[i]
-					const nextDir = node.outgoingDirections[iNext]
+					const curDir  = joint.outgoingDirections[i]
+					const nextDir = joint.outgoingDirections[iNext]
 					
 					const wrapAround = (nextDir < curDir ? Math.PI * 2 : 0)
 					const gapSize = (wrapAround * 2 + nextDir) - (wrapAround + curDir)
@@ -374,7 +427,7 @@ export class CircuitEditor
 					if (gapSize > biggestGapSize)
 					{
 						biggestGapSize = gapSize
-						node.labelDirection = curDir + gapSize / 2
+						joint.labelDirection = curDir + gapSize / 2
 					}
 				}
 			}
@@ -391,7 +444,7 @@ export class CircuitEditor
 		for (const component of this.components)
 			component.reset(this)
 		
-		this.solver.stampBegin(this.nodes.size, this.voltageSources, this.groundNodeIndex)
+		this.solver.stampBegin(this.nodes.length, this.voltageSources, this.groundNodeIndex)
 		
 		for (const component of this.components)
 			component.solverBegin(this, this.solver)
@@ -487,6 +540,7 @@ export class CircuitEditor
 				component.renderCurrent(this, this.ctx)
 		
 		this.drawNodeVoltages()
+		//this.drawDebugNodes()
 		
 		if (!this.mouseDown && this.mousePos != null && this.mouseAddComponentClass != null)
 		{
@@ -520,13 +574,13 @@ export class CircuitEditor
 		this.ctx.font = "15px Verdana"
 		this.ctx.textBaseline = "middle"
 		
-		for (const [key, node] of this.nodes)
+		for (const [key, joint] of this.joints)
 		{
-			if (!node.visible)
+			if (!joint.visible)
 				continue
 			
-			const xOffset = 15 *  Math.cos(node.labelDirection)
-			const yOffset = 15 * -Math.sin(node.labelDirection)
+			const xOffset = 15 *  Math.cos(joint.labelDirection)
+			const yOffset = 15 * -Math.sin(joint.labelDirection)
 			
 			if (Math.abs(xOffset) < Math.abs(yOffset) * 0.1)
 				this.ctx.textAlign = "center"
@@ -535,11 +589,11 @@ export class CircuitEditor
 			else
 				this.ctx.textAlign = "right"
 			
-			const v = this.getNodeVoltage(node.index)
+			const v = this.getNodeVoltage(joint.nodeIndex)
 			const str = v.toFixed(3) + " V"
 			
 			this.ctx.fillStyle = this.getVoltageColor(v)
-			this.ctx.fillText(str, node.pos.x + xOffset, node.pos.y + yOffset)
+			this.ctx.fillText(str, joint.pos.x + xOffset, joint.pos.y + yOffset)
 		}
 	}
 	
@@ -547,12 +601,12 @@ export class CircuitEditor
 	saveToString()
 	{
 		let str = "0,"
-		str += this.nodes.size + ","
+		str += this.joints.size + ","
 		
-		for (const [key, node] of this.nodes)
+		for (const [key, joint] of this.joints)
 		{
-			str += (node.pos.x / this.tileSize).toString() + ","
-			str += (node.pos.y / this.tileSize).toString() + ","
+			str += (joint.pos.x / this.tileSize).toString() + ","
+			str += (joint.pos.y / this.tileSize).toString() + ","
 		}
 		
 		for (const component of this.components)
@@ -578,17 +632,17 @@ export class CircuitEditor
 		
 		let loadData = 
 		{
-			nodes: []
+			joints: []
 		}
 		
 		const version = parseInt(reader.read())
-		const nodeNum = parseInt(reader.read())
+		const jointNum = parseInt(reader.read())
 		
-		for (let i = 0; i < nodeNum; i++)
+		for (let i = 0; i < jointNum; i++)
 		{
 			const x = parseInt(reader.read()) * this.tileSize
 			const y = parseInt(reader.read()) * this.tileSize
-			loadData.nodes.push({ x, y })
+			loadData.joints.push({ x, y })
 		}
 		
 		const componentClasses =
@@ -599,7 +653,8 @@ export class CircuitEditor
 			ComponentCurrentSource,
 			ComponentCapacitor,
 			ComponentInductor,
-			ComponentVoltageSource
+			ComponentVoltageSource,
+			ComponentGround,
 		]
 		
 		let componentIds = new Map()

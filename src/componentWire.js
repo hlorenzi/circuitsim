@@ -25,7 +25,7 @@ export class ComponentWire extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.nodes[0] + "," + this.nodes[1] + ","
+		return this.joints[0] + "," + this.joints[1] + ","
 	}
 	
 	

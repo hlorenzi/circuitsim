@@ -29,7 +29,7 @@ export class ComponentInductor extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.nodes[0] + "," + this.nodes[1] + "," + this.inductance + ","
+		return this.joints[0] + "," + this.joints[1] + "," + this.inductance + ","
 	}
 	
 	

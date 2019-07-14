@@ -2,7 +2,7 @@ import { Component } from "./component.js"
 import * as MathUtils from "./math.js"
 
 
-export class ComponentDoubleEnded extends Component
+export class ComponentSingleEnded extends Component
 {
 	constructor(p)
 	{
@@ -82,9 +82,6 @@ export class ComponentDoubleEnded extends Component
 		if (t < 0.1)
 			return { kind: "junction", index: 0, distSqr }
 		
-		if (t > 0.9)
-			return { kind: "junction", index: 1, distSqr }
-		
 		if (t < 0.2)
 			return { kind: "vertex", index: 0, distSqr }
 		
@@ -126,8 +123,8 @@ export class ComponentDoubleEnded extends Component
 	drawSymbolBegin(manager, ctx, symbolSize)
 	{
 		const vector = {
-			x: this.points[1].x - this.points[0].x,
-			y: this.points[1].y - this.points[0].y
+			x: this.points[0].x - this.points[1].x,
+			y: this.points[0].y - this.points[1].y
 		}
 		
 		const vectorLen = Math.sqrt(vector.x * vector.x + vector.y * vector.y)
@@ -137,8 +134,7 @@ export class ComponentDoubleEnded extends Component
 			y: vector.y / vectorLen
 		}
 		
-		const break1 = Math.max(        0, vectorLen / 2 - symbolSize / 2)
-		const break2 = Math.min(vectorLen, vectorLen / 2 + symbolSize / 2)
+		const break1 = Math.min(vectorLen, symbolSize)
 		
 		ctx.save()
 		
@@ -146,17 +142,10 @@ export class ComponentDoubleEnded extends Component
 		ctx.beginPath()
 		ctx.arc(this.points[0].x, this.points[0].y, 2, 0, Math.PI * 2)
 		ctx.moveTo(this.points[0].x, this.points[0].y)
-		ctx.lineTo(this.points[0].x + vectorUnit.x * break1, this.points[0].y + vectorUnit.y * break1)
+		ctx.lineTo(this.points[1].x + vectorUnit.x * break1, this.points[1].y + vectorUnit.y * break1)
 		ctx.stroke()
 		
-		ctx.strokeStyle = manager.getVoltageColor(manager.getNodeVoltage(this.nodes[1]))
-		ctx.beginPath()
-		ctx.arc(this.points[1].x, this.points[1].y, 2, 0, Math.PI * 2)
-		ctx.moveTo(this.points[0].x + vectorUnit.x * break2, this.points[0].y + vectorUnit.y * break2)
-		ctx.lineTo(this.points[1].x, this.points[1].y)
-		ctx.stroke()
-		
-		ctx.translate(this.points[0].x + vector.x / 2, this.points[0].y + vector.y / 2)
+		ctx.translate(this.points[1].x + vectorUnit.x * symbolSize / 2, this.points[1].y + vectorUnit.y * symbolSize / 2)
 		ctx.transform(vectorUnit.x, vectorUnit.y, -vectorUnit.y, vectorUnit.x, 0, 0)
 	}
 	

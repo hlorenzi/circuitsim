@@ -1,7 +1,7 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentResistor extends ComponentLine
+export class ComponentResistor extends ComponentDoubleEnded
 {
 	constructor(pos)
 	{
@@ -36,19 +36,17 @@ export class ComponentResistor extends ComponentLine
 	}
 	
 	
-	step(manager)
+	solverBegin(manager, solver)
 	{
-		const v0 = manager.getNodeVoltage(this.nodes[0])
-		const v1 = manager.getNodeVoltage(this.nodes[1])
-		this.current = (v1 - v0) / this.resistance
-		
-		super.step(manager)
+		solver.stampResistance(this.nodes[0], this.nodes[1], this.resistance)
 	}
 	
 	
-	stamp(manager, solver)
+	solverIterationEnd(manager)
 	{
-		solver.stampResistance(this.nodes[0], this.nodes[1], this.resistance)
+		const v0 = manager.getNodeVoltage(this.nodes[0])
+		const v1 = manager.getNodeVoltage(this.nodes[1])
+		this.current = (v0 - v1) / this.resistance
 	}
 	
 	
@@ -58,7 +56,7 @@ export class ComponentResistor extends ComponentLine
 	}
 	
 	
-	draw(manager, ctx)
+	render(manager, ctx)
 	{
 		const symbolSize        = Math.min(75, this.getLength())
 		const symbolAmplitude   = 12.5

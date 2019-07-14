@@ -1,13 +1,13 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentCurrentSource extends ComponentLine
+export class ComponentCurrentSource extends ComponentDoubleEnded
 {
 	constructor(pos)
 	{
 		super(pos)
 		
-		this.current = 0.01
+		this.currentSetting = 0.01
 	}
 	
 	
@@ -25,36 +25,36 @@ export class ComponentCurrentSource extends ComponentLine
 	
 	saveToString(manager)
 	{
-		return this.nodes[0] + "," + this.nodes[1] + "," + this.current + ","
+		return this.nodes[0] + "," + this.nodes[1] + "," + this.currentSetting + ","
 	}
 	
 	
 	loadFromString(manager, loadData, reader)
 	{
 		super.loadFromString(manager, loadData, reader)
-		this.current = parseFloat(reader.read())
+		this.currentSetting = parseFloat(reader.read())
 	}
 	
 	
-	step(manager)
+	solverBegin(manager, solver)
 	{
-		this.stepCurrentAnim(-1)
+		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.currentSetting)
 	}
 	
 	
-	stamp(manager, solver)
+	solverIterationEnd(manager, solver)
 	{
-		solver.stampCurrentSource(this.nodes[0], this.nodes[1], this.current)
+		this.current = this.currentSetting
 	}
 	
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Current", "A", this.current, (x) => { this.current = x })
+		editBoxDef.addNumberUnitInput("Current", "A", this.currentSetting, (x) => { this.currentSetting = x })
 	}
 	
 	
-	draw(manager, ctx)
+	render(manager, ctx)
 	{
 		const symbolSize = Math.min(50, this.getLength())
 	

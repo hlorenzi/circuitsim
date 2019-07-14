@@ -1,7 +1,7 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentCapacitor extends ComponentLine
+export class ComponentCapacitor extends ComponentDoubleEnded
 {
 	constructor(pos)
 	{
@@ -40,13 +40,7 @@ export class ComponentCapacitor extends ComponentLine
 	}
 	
 	
-	step(manager)
-	{
-		this.stepCurrentAnim(-1)
-	}
-	
-	
-	stamp(manager, solver)
+	solverBegin(manager, solver)
 	{
 		this.current = 0
 		this.currentAnim = 0
@@ -101,7 +95,7 @@ export class ComponentCapacitor extends ComponentLine
 	}
 	
 	
-	draw(manager, ctx)
+	render(manager, ctx)
 	{
 		const symbolSize = Math.min(15, this.getLength())
 		const plateSize  = 25

@@ -1,7 +1,7 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentVoltageSource extends ComponentLine
+export class ComponentVoltageSource extends ComponentDoubleEnded
 {
 	constructor(pos)
 	{
@@ -50,28 +50,27 @@ export class ComponentVoltageSource extends ComponentLine
 	}
 	
 	
-	step(manager)
-	{
-		this.current = manager.getVoltageSourceCurrent(this.voltageSourceIndex)
-		super.step(manager)
-	}
-	
-	
 	calculateVoltage(manager)
 	{
-		return this.dcBias + Math.sin((manager.time * Math.PI * 2 + this.phaseOffset) * this.frequency) * this.amplitude
+		return this.dcBias + Math.sin((this.phaseOffset / 180 * Math.PI) + (manager.time * Math.PI * 2 * this.frequency)) * this.amplitude
 	}
 	
 	
-	stamp(manager, solver)
+	solverBegin(manager, solver)
 	{
 		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], this.calculateVoltage(manager))
 	}
 	
 	
-	solverIteration(manager, solver)
+	solverIterationBegin(manager, solver)
 	{
 		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], this.calculateVoltage(manager))
+	}
+	
+	
+	solverIterationEnd(manager)
+	{
+		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
 	}
 	
 	
@@ -80,11 +79,11 @@ export class ComponentVoltageSource extends ComponentLine
 		editBoxDef.addNumberUnitInput("Amplitude",    "V",   this.amplitude,   (x) => { this.amplitude = x })
 		editBoxDef.addNumberUnitInput("DC Bias",      "V",   this.dcBias,      (x) => { this.dcBias = x })
 		editBoxDef.addNumberUnitInput("Frequency",    "Hz",  this.frequency,   (x) => { this.frequency = x })
-		editBoxDef.addNumberUnitInput("Phase Offset", "rad", this.phaseOffset, (x) => { this.phaseOffset = x })
+		editBoxDef.addNumberUnitInput("Phase Offset", "deg", this.phaseOffset, (x) => { this.phaseOffset = x })
 	}
 	
 	
-	draw(manager, ctx)
+	render(manager, ctx)
 	{
 		const symbolSize = Math.min(50, this.getLength())
 	

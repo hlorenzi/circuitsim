@@ -1,7 +1,7 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentBattery extends ComponentLine
+export class ComponentBattery extends ComponentDoubleEnded
 {
 	constructor(pos)
 	{
@@ -37,16 +37,15 @@ export class ComponentBattery extends ComponentLine
 	}
 	
 	
-	step(manager)
+	solverBegin(manager, solver)
 	{
-		this.current = manager.getVoltageSourceCurrent(this.voltageSourceIndex)
-		super.step(manager)
+		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], this.voltage)
 	}
 	
 	
-	stamp(manager, solver)
+	solverIterationEnd(manager)
 	{
-		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], this.voltage)
+		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
 	}
 	
 	
@@ -56,7 +55,7 @@ export class ComponentBattery extends ComponentLine
 	}
 	
 	
-	draw(manager, ctx)
+	render(manager, ctx)
 	{
 		const symbolSize     = Math.min(15, this.getLength())
 		const smallPlateSize = 12.5

@@ -1,7 +1,7 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentWire extends ComponentLine
+export class ComponentWire extends ComponentDoubleEnded
 {
 	constructor(p)
 	{
@@ -29,20 +29,19 @@ export class ComponentWire extends ComponentLine
 	}
 	
 	
-	step(manager)
-	{
-		this.current = manager.getVoltageSourceCurrent(this.voltageSourceIndex)
-		super.step(manager)
-	}
-	
-	
-	stamp(manager, solver)
+	solverBegin(manager, solver)
 	{
 		solver.stampVoltage(this.voltageSourceIndex, this.nodes[0], this.nodes[1], 0)
 	}
 	
 	
-	draw(manager, ctx)
+	solverIterationEnd(manager)
+	{
+		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
+	}
+	
+	
+	render(manager, ctx)
 	{
 		ctx.save()
 		

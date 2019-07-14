@@ -38,9 +38,10 @@ export class CircuitEditor
 		this.mouseCurrentHoverComponent = null
 		this.mouseCurrentHoverData = null
 		
-		this.canvas.onmousedown = (ev) => this.onMouseDown(ev)
-		this.canvas.onmousemove = (ev) => this.onMouseMove(ev)
-		this.canvas.onmouseup   = (ev) => this.onMouseUp  (ev)
+		this.canvas.onmousedown  = (ev) => this.onMouseDown(ev)
+		this.canvas.onmousemove  = (ev) => this.onMouseMove(ev)
+		this.canvas.onmouseup    = (ev) => this.onMouseUp  (ev)
+		this.canvas.onmouseleave = (ev) => this.onMouseUp  (ev)
 		
 		this.canvas.oncontextmenu = (ev) => ev.preventDefault()
 		
@@ -62,9 +63,6 @@ export class CircuitEditor
 		{
 			this.debugSkipIterationFramesCur = 0
 			
-			for (const component of this.components)
-				component.step(this)
-			
 			if (this.solver != null && this.solver.readyToRun && this.components.length > 0)
 			{
 				for (const component of this.components)
@@ -82,9 +80,6 @@ export class CircuitEditor
 					for (const component of this.components)
 						component.solverIterationBegin(this, this.solver)
 					
-					for (const component of this.components)
-						component.solverIteration(this, this.solver)
-					
 					this.solver.solve()
 					
 					for (const component of this.components)
@@ -96,9 +91,12 @@ export class CircuitEditor
 				
 				this.time = initialTime + iters * this.timePerIteration
 			}
+			
+			for (const component of this.components)
+				component.updateCurrentAnim(this, 1)
 		}
 		
-		this.draw()
+		this.render()
 		window.requestAnimationFrame(() => this.run())
 	}
 	
@@ -111,7 +109,7 @@ export class CircuitEditor
 		this.canvas.width = width
 		this.canvas.height = height
 		
-		this.draw()
+		this.render()
 	}
 	
 	
@@ -214,7 +212,7 @@ export class CircuitEditor
 		}
 		
 		this.refreshUI()
-		this.draw()
+		this.render()
 	}
 	
 	
@@ -242,7 +240,7 @@ export class CircuitEditor
 			}
 		
 			this.refreshNodes()
-			this.draw()
+			this.render()
 		}
 		
 		else if (this.mouseAddComponentClass == null)
@@ -273,7 +271,7 @@ export class CircuitEditor
 		
 		this.mouseDown = false
 		this.removeDegenerateComponents()
-		this.draw()
+		this.render()
 	}
 	
 	
@@ -390,16 +388,15 @@ export class CircuitEditor
 	{
 		this.time = 0
 		
+		for (const component of this.components)
+			component.reset(this)
+		
 		this.solver.stampBegin(this.nodes.size, this.voltageSources, this.groundNodeIndex)
 		
 		for (const component of this.components)
-			component.stamp(this, this.solver)
+			component.solverBegin(this, this.solver)
 		
 		this.solver.stampEnd()
-		//this.solver.solve()
-		
-		for (const component of this.components)
-			component.solverBegin(this, this.solver)
 	}
 	
 	
@@ -439,7 +436,7 @@ export class CircuitEditor
 	}
 	
 	
-	draw()
+	render()
 	{
 		if (this.debugDrawClean)
 			this.ctx.clearRect(0, 0, this.width, this.height)
@@ -467,17 +464,27 @@ export class CircuitEditor
 		this.ctx.lineWidth = 4
 		this.ctx.lineCap = "round"
 		
+		this.ctx.strokeStyle = "#26a"
+		this.ctx.fillStyle = "#26a"
 		for (const component of this.components)
-			component.drawSelection(this, this.ctx)
+			component.renderSelection(this, this.ctx)
 		
+		this.ctx.strokeStyle = "#4af"
+		this.ctx.fillStyle = "#4af"
 		if (this.mouseCurrentHoverComponent != null && !this.mouseDown)
-			this.mouseCurrentHoverComponent.drawHover(this, this.ctx, this.mouseCurrentHoverData)
+			this.mouseCurrentHoverComponent.renderHover(this, this.ctx, this.mouseCurrentHoverData)
+		
+		this.ctx.strokeStyle = "#f80"
+		this.ctx.fillStyle = "#f80"
+		for (const component of this.componentsForEditing)
+			component.renderEditing(this, this.ctx)
 		
 		for (const component of this.components)
-			component.draw(this, this.ctx)
+			component.render(this, this.ctx)
 		
-		for (const component of this.components)
-			component.drawCurrent(this, this.ctx)
+		if (!this.mouseDown)
+			for (const component of this.components)
+				component.renderCurrent(this, this.ctx)
 		
 		this.drawNodeVoltages()
 		
@@ -614,6 +621,6 @@ export class CircuitEditor
 		
 		this.removeDegenerateComponents()
 		this.refreshNodes()
-		this.draw()
+		this.render()
 	}
 }

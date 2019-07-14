@@ -1,10 +1,13 @@
+import { Component } from "./component.js"
 import * as MathUtils from "./math.js"
 
 
-export class ComponentLine
+export class ComponentDoubleEnded extends Component
 {
 	constructor(p)
 	{
+		super(p)
+		
 		this.points = [p, p]
 		this.nodes = [-1, -1]
 		this.selected = [false, false]
@@ -46,13 +49,14 @@ export class ComponentLine
 	}
 	
 	
-	step(manager)
+	reset(manager)
 	{
-		this.stepCurrentAnim(1)
+		this.current = 0
+		this.currentAnim = 0
 	}
 	
 	
-	stepCurrentAnim(mult)
+	updateCurrentAnim(manager, mult)
 	{
 		const delta = Math.max(-0.25, Math.min(0.25, mult * (this.current * 4.5)))
 		
@@ -60,71 +64,9 @@ export class ComponentLine
 	}
 	
 	
-	stamp(manager, solver)
-	{
-		
-	}
-	
-	
-	solverBegin(manager, solver)
-	{
-		
-	}
-	
-	
-	solverFrameBegin(manager, solver)
-	{
-		
-	}
-	
-	
-	solverIterationBegin(manager, solver)
-	{
-		
-	}
-	
-	
-	solverIteration(manager, solver)
-	{
-		
-	}
-	
-	
-	solverIterationEnd(manager, solver)
-	{
-		
-	}
-	
-	
-	solverFrameEnd(manager, solver)
-	{
-		
-	}
-	
-	
 	isDegenerate()
 	{
 		return this.points[0].x == this.points[1].x && this.points[0].y == this.points[1].y
-	}
-	
-	
-	isFullySelected()
-	{
-		for (let i = 0; i < this.selected.length; i++)
-			if (!this.selected[i])
-				return false
-			
-		return true
-	}
-	
-	
-	isAnySelected()
-	{
-		for (let i = 0; i < this.selected.length; i++)
-			if (this.selected[i])
-				return true
-			
-		return false
 	}
 	
 	
@@ -160,35 +102,13 @@ export class ComponentLine
 		if (t > 0.9)
 			return { kind: "junction", index: 1, distSqr }
 		
-		if (t < 0.33)
+		if (t < 0.2)
 			return { kind: "vertex", index: 0, distSqr }
 		
-		if (t > 0.66)
+		if (t > 0.8)
 			return { kind: "vertex", index: 1, distSqr }
 		
 		return { kind: "full", distSqr }
-	}
-	
-	
-	dragStart()
-	{
-		for (let i = 0; i < this.points.length; i++)
-			this.dragOrigin[i] = this.points[i]
-	}
-	
-	
-	dragMove(manager, deltaPos)
-	{
-		for (let i = 0; i < this.selected.length; i++)
-		{
-			if (this.selected[i])
-			{
-				this.points[i] = manager.snapPos({
-					x: this.dragOrigin[i].x + deltaPos.x,
-					y: this.dragOrigin[i].y + deltaPos.y
-				})
-			}
-		}
 	}
 	
 	
@@ -200,23 +120,6 @@ export class ComponentLine
 		}
 		
 		return Math.sqrt(vector.x * vector.x + vector.y * vector.y)
-	}
-	
-	
-	getBBox()
-	{
-		const xMin = Math.min(this.points[0].x, this.points[1].x)
-		const xMax = Math.max(this.points[0].x, this.points[1].x)
-		const yMin = Math.min(this.points[0].y, this.points[1].y)
-		const yMax = Math.max(this.points[0].y, this.points[1].y)
-		
-		return { xMin, xMax, yMin, yMax }
-	}
-	
-	
-	getEditBox(editBoxDef)
-	{
-		
 	}
 	
 	
@@ -291,30 +194,13 @@ export class ComponentLine
 	}
 	
 	
-	drawCurrent(manager, ctx)
+	renderCurrent(manager, ctx)
 	{
-		if (manager.debugDrawClean)
-			return
-		
-		ctx.save()
-		
-		ctx.lineWidth   = 8
-		ctx.lineCap     = "round"
-		ctx.strokeStyle = "#ff0"
-		
-		ctx.lineDashOffset = 47.5 * this.currentAnim
-		ctx.setLineDash([2.5, 45])
-		
-		ctx.beginPath()
-		ctx.moveTo(this.points[0].x, this.points[0].y)
-		ctx.lineTo(this.points[1].x, this.points[1].y)
-		ctx.stroke()
-		
-		ctx.restore()
+		this.drawCurrent(manager, ctx, this.currentAnim, this.points[0], this.points[1])
 	}
 	
 	
-	drawHover(manager, ctx, hover)
+	renderHover(manager, ctx, hover)
 	{
 		if (manager.debugDrawClean)
 			return
@@ -323,8 +209,6 @@ export class ComponentLine
 		
 		const highlightSize = 20
 		
-		ctx.strokeStyle = "#4af"
-		ctx.fillStyle = "#4af"
 		ctx.lineWidth = highlightSize
 		
 		if (hover.kind == "full")
@@ -344,8 +228,14 @@ export class ComponentLine
 		
 		if (hover.kind == "vertex")
 		{
-			const centerX = (this.points[0].x + this.points[1].x) / 2
-			const centerY = (this.points[0].y + this.points[1].y) / 2
+			let centerX = (this.points[0].x + this.points[1].x) / 2
+			let centerY = (this.points[0].y + this.points[1].y) / 2
+			
+			for (let i = 0; i < 3; i++)
+			{
+				centerX = (centerX + this.points[hover.index].x) / 2
+				centerY = (centerY + this.points[hover.index].y) / 2
+			}
 			
 			ctx.beginPath()
 			ctx.moveTo(this.points[hover.index].x, this.points[hover.index].y)
@@ -357,7 +247,7 @@ export class ComponentLine
 	}
 	
 	
-	drawSelection(manager, ctx)
+	renderSelection(manager, ctx)
 	{
 		if (manager.debugDrawClean)
 			return
@@ -366,8 +256,6 @@ export class ComponentLine
 		
 		const highlightSize = 18
 		
-		ctx.strokeStyle = "#26a"
-		ctx.fillStyle = "#26a"
 		ctx.lineWidth = highlightSize
 		
 		if (this.selected[0] && this.selected[1])
@@ -391,6 +279,26 @@ export class ComponentLine
 			ctx.arc(this.points[1].x, this.points[1].y, highlightSize / 2, 0, Math.PI * 2)
 			ctx.fill()
 		}
+
+		ctx.restore()
+	}
+	
+	
+	renderEditing(manager, ctx)
+	{
+		if (manager.debugDrawClean)
+			return
+		
+		ctx.save()
+		
+		const highlightSize = 20
+		
+		ctx.lineWidth = highlightSize
+		
+		ctx.beginPath()
+		ctx.moveTo(this.points[0].x, this.points[0].y)
+		ctx.lineTo(this.points[1].x, this.points[1].y)
+		ctx.stroke()
 
 		ctx.restore()
 	}

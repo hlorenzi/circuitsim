@@ -1,7 +1,7 @@
-import { ComponentLine } from "./componentLine.js"
+import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
 
 
-export class ComponentInductor extends ComponentLine
+export class ComponentInductor extends ComponentDoubleEnded
 {
 	constructor(pos)
 	{
@@ -40,13 +40,7 @@ export class ComponentInductor extends ComponentLine
 	}
 	
 	
-	step(manager)
-	{
-		this.stepCurrentAnim(-1)
-	}
-	
-	
-	stamp(manager, solver)
+	solverBegin(manager, solver)
 	{
 		this.current = 0
 		this.currentAnim = 0
@@ -100,7 +94,7 @@ export class ComponentInductor extends ComponentLine
 	}
 	
 	
-	draw(manager, ctx)
+	render(manager, ctx)
 	{
 		const symbolSize   = Math.min(75, this.getLength())
 		const arcNum       = 3

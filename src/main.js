@@ -1,3 +1,7 @@
+import "core-js"
+import "regenerator-runtime/runtime"
+
+
 import React from "react"
 import ReactDOM from "react-dom"
 import { CircuitEditor } from "./circuitEditor.js"
@@ -13,22 +17,28 @@ document.body.onload = function()
 	gEditor = new CircuitEditor(document.getElementById("canvasMain"))
 	gEditor.run()
 	
-	const urlData = getURLQueryParameter("circuit")
-	if (urlData != null)
-		gEditor.loadFromString(urlData)
-	
 	ReactDOM.render(<UIToolbar editor={ gEditor } saveToURL={ saveToURL }/>, document.getElementById("divToolbox"))
 	
 	gEditor.refreshUI = refreshUI
 	
 	onResize()
 	document.body.onresize = (ev) => onResize()
+	
+	const urlData = getURLQueryParameter("circuit")
+	if (urlData != null)
+		gEditor.loadFromString(urlData)
 }
 
 
 function refreshUI()
 {
-	ReactDOM.render(<UIEditBox editor={ gEditor } onChange={ () => { gEditor.refreshSolver(); refreshUI() } }/>, document.getElementById("divFloatingEditBox"))
+	ReactDOM.render(
+		<UIEditBox
+			editor={ gEditor }
+			onChange={ () => { gEditor.refreshSolver(); refreshUI() } }
+			onDelete={ () => { gEditor.removeComponentsForEditing(); refreshUI() } }
+		/>,
+		document.getElementById("divFloatingEditBox"))
 }
 
 

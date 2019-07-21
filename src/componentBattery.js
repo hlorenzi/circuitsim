@@ -1,4 +1,5 @@
 import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
+import * as MathUtils from "./math.js"
 
 
 export class ComponentBattery extends ComponentDoubleEnded
@@ -26,14 +27,14 @@ export class ComponentBattery extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.joints[0] + "," + this.joints[1] + "," + this.voltage + ","
+		return this.joints[0] + "," + this.joints[1] + "," + MathUtils.valueToStringWithUnitPrefix(this.voltage) + ","
 	}
 	
 	
 	loadFromString(manager, loadData, reader)
 	{
 		super.loadFromString(manager, loadData, reader)
-		this.voltage = parseFloat(reader.read())
+		this.voltage = reader.readNumber()
 	}
 	
 	
@@ -43,7 +44,7 @@ export class ComponentBattery extends ComponentDoubleEnded
 	}
 	
 	
-	solverIterationEnd(manager)
+	solverIterationEnd(manager, solver)
 	{
 		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
 	}
@@ -51,7 +52,7 @@ export class ComponentBattery extends ComponentDoubleEnded
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Voltage", "V", this.voltage, (x) => { this.voltage = x })
+		editBoxDef.addNumberInput("Voltage", "V", this.voltage, (x) => { this.voltage = x })
 	}
 	
 	

@@ -1,4 +1,5 @@
 import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
+import * as MathUtils from "./math.js"
 
 
 export class ComponentCapacitor extends ComponentDoubleEnded
@@ -29,14 +30,14 @@ export class ComponentCapacitor extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.joints[0] + "," + this.joints[1] + "," + this.capacitance + ","
+		return this.joints[0] + "," + this.joints[1] + "," + MathUtils.valueToStringWithUnitPrefix(this.capacitance) + ","
 	}
 	
 	
 	loadFromString(manager, loadData, reader)
 	{
 		super.loadFromString(manager, loadData, reader)
-		this.capacitance = parseFloat(reader.read())
+		this.capacitance = reader.readNumber()
 	}
 	
 	
@@ -91,7 +92,7 @@ export class ComponentCapacitor extends ComponentDoubleEnded
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Capacitance", "F", this.capacitance, (x) => { this.capacitance = x })
+		editBoxDef.addNumberInput("Capacitance", "F", this.capacitance, (x) => { this.capacitance = x })
 	}
 	
 	

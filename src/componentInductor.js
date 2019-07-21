@@ -1,4 +1,5 @@
 import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
+import * as MathUtils from "./math.js"
 
 
 export class ComponentInductor extends ComponentDoubleEnded
@@ -29,14 +30,14 @@ export class ComponentInductor extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.joints[0] + "," + this.joints[1] + "," + this.inductance + ","
+		return this.joints[0] + "," + this.joints[1] + "," + MathUtils.valueToStringWithUnitPrefix(this.inductance) + ","
 	}
 	
 	
 	loadFromString(manager, loadData, reader)
 	{
 		super.loadFromString(manager, loadData, reader)
-		this.inductance = parseFloat(reader.read())
+		this.inductance = reader.readNumber()
 	}
 	
 	
@@ -90,7 +91,7 @@ export class ComponentInductor extends ComponentDoubleEnded
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Inductance", "H", this.inductance, (x) => { this.inductance = x })
+		editBoxDef.addNumberInput("Inductance", "H", this.inductance, (x) => { this.inductance = x })
 	}
 	
 	

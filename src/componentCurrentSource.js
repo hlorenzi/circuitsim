@@ -1,4 +1,5 @@
 import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
+import * as MathUtils from "./math.js"
 
 
 export class ComponentCurrentSource extends ComponentDoubleEnded
@@ -25,14 +26,14 @@ export class ComponentCurrentSource extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.joints[0] + "," + this.joints[1] + "," + this.currentSetting + ","
+		return this.joints[0] + "," + this.joints[1] + "," + MathUtils.valueToStringWithUnitPrefix(this.currentSetting) + ","
 	}
 	
 	
 	loadFromString(manager, loadData, reader)
 	{
 		super.loadFromString(manager, loadData, reader)
-		this.currentSetting = parseFloat(reader.read())
+		this.currentSetting = reader.readNumber()
 	}
 	
 	
@@ -50,7 +51,7 @@ export class ComponentCurrentSource extends ComponentDoubleEnded
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Current", "A", this.currentSetting, (x) => { this.currentSetting = x })
+		editBoxDef.addNumberInput("Current", "A", this.currentSetting, (x) => { this.currentSetting = x })
 	}
 	
 	

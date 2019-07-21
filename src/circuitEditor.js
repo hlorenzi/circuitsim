@@ -9,6 +9,7 @@ import { ComponentCapacitor } from "./componentCapacitor.js"
 import { ComponentInductor } from "./componentInductor.js"
 import { ComponentVoltageSource } from "./componentVoltageSource.js"
 import { ComponentGround } from "./componentGround.js"
+import * as MathUtils from "./math.js"
 
 
 export class CircuitEditor
@@ -34,18 +35,25 @@ export class CircuitEditor
 		this.groundNodeIndex = -1
 		this.voltageSources = 0
 		
+		this.cameraPos = { x: 0, y: 0 }
+		this.cameraZoomLevel = 0
+		
 		this.mouseDown = false
 		this.mousePos = null
+		this.mousePosRaw = null
+		this.mousePosSnapped = null
 		this.mouseDragOrigin = null
+		this.mouseDragOriginRaw = null
+		this.mouseDragOriginSnapped = null
 		this.mouseAddComponentClass = null
 		this.mouseCurrentAction = null
-		this.mouseCurrentHoverComponent = null
 		this.mouseCurrentHoverData = null
 		
-		this.canvas.onmousedown  = (ev) => this.onMouseDown(ev)
-		this.canvas.onmousemove  = (ev) => this.onMouseMove(ev)
-		this.canvas.onmouseup    = (ev) => this.onMouseUp  (ev)
-		this.canvas.onmouseleave = (ev) => this.onMouseUp  (ev)
+		this.canvas.onmousedown  = (ev) => this.onMouseDown (ev)
+		this.canvas.onmousemove  = (ev) => this.onMouseMove (ev)
+		this.canvas.onmouseup    = (ev) => this.onMouseUp   (ev)
+		this.canvas.onmouseleave = (ev) => this.onMouseUp   (ev)
+		this.canvas.onwheel      = (ev) => this.onMouseWheel(ev)
 		
 		this.canvas.oncontextmenu = (ev) => ev.preventDefault()
 		
@@ -119,20 +127,33 @@ export class CircuitEditor
 	
 	getAbsolutePosition(pos)
 	{
+		const zoom = this.getZoomFactor(this.cameraZoomLevel)
 		const rect = this.canvas.getBoundingClientRect()
+		
 		return {
-			x: pos.x + rect.left,
-			y: pos.y + rect.top
+			x: (pos.x - this.cameraPos.x) * zoom + this.width  / 2 + rect.left,
+			y: (pos.y - this.cameraPos.y) * zoom + this.height / 2 + rect.top 
 		}
 	}
 	
 	
-	getMousePos(ev)
+	getRawMousePos(ev)
 	{
 		const rect = this.canvas.getBoundingClientRect()
 		return {
 			x: ev.clientX - rect.left,
 			y: ev.clientY - rect.top
+		}
+	}
+	
+	
+	transformRawPos(pos)
+	{
+		const zoom = this.getZoomFactor(this.cameraZoomLevel)
+		
+		return {
+			x: (pos.x - this.width  / 2) / zoom + this.cameraPos.x,
+			y: (pos.y - this.height / 2) / zoom + this.cameraPos.y
 		}
 	}
 	
@@ -146,6 +167,36 @@ export class CircuitEditor
 	}
 	
 	
+	getHoverData(pos)
+	{
+		let data = null
+		
+		for (let component of this.components)
+		{
+			const hover = component.getHover(pos)
+			if (hover == null)
+				continue
+			
+			if (data == null ||
+				hover.distSqr < data.distSqr)
+			{
+				data = { ...hover, component }
+			}
+		}
+		
+		return data
+	}
+	
+	
+	getZoomFactor(level)
+	{
+		if (level >= 0)
+			return 1 + level
+		else
+			return 1 / (-level + 1)
+	}
+	
+	
 	onMouseDown(ev)
 	{
 		ev.preventDefault()
@@ -153,58 +204,65 @@ export class CircuitEditor
 		if (this.mouseDown)
 			return
 		
-		const pos = this.snapPos(this.getMousePos(ev))
+		this.mousePosRaw = this.getRawMousePos(ev)
+		this.mousePos = this.transformRawPos(this.mousePosRaw)
+		this.mousePosSnapped = this.snapPos(this.mousePos)
 		
-		this.mouseDragOrigin = pos
+		this.mouseDragOriginRaw = this.mousePosRaw
+		this.mouseDragOrigin = this.mousePos
+		this.mouseDragOriginSnapped = this.mousePosSnapped
 		
 		this.mouseDown = true
+		this.mouseCurrentAction = null
 		this.componentsForEditing = []
 		
-		if (!ev.ctrlKey)// && (this.mouseCurrentHoverComponent == null || !this.mouseCurrentHoverComponent.isAnySelected()))
+		if (!ev.ctrlKey)// && (this.mouseCurrentHoverData.component == null || !this.mouseCurrentHoverData.component.isAnySelected()))
 			this.unselectAll()
 		
-		if (ev.button != 0 && this.mouseCurrentHoverComponent != null)
+		if (ev.button != 0)
 		{
-			this.componentsForEditing = [this.mouseCurrentHoverComponent]
+			this.mouseCurrentAction = "pan"
 		}
 		
 		else if (this.mouseAddComponentClass != null)
 		{
 			this.mouseCurrentAction = "drag"
 			
-			let component = new (this.mouseAddComponentClass)(pos)
+			let component = new (this.mouseAddComponentClass)(this.mousePosSnapped)
 			component.selected[1] = true
 			component.dragStart()
 			this.components.push(component)
 		}
 		
-		else if (this.mouseCurrentHoverComponent != null)
+		else if (this.mouseCurrentHoverData != null)
 		{
+			this.mouseCurrentAction = "drag"
+			
 			for (let component of this.components)
 				component.dragStart()
 			
 			if (this.mouseCurrentHoverData.kind == "full")
 			{
-				for (let i = 0; i < this.mouseCurrentHoverComponent.selected.length; i++)
-					this.mouseCurrentHoverComponent.selected[i] = true
+				for (let i = 0; i < this.mouseCurrentHoverData.component.selected.length; i++)
+					this.mouseCurrentHoverData.component.selected[i] = true
 				
 				for (let component of this.components)
 					for (let i = 0; i < component.points.length; i++)
-						for (let j = 0; j < this.mouseCurrentHoverComponent.points.length; j++)
+						for (let j = 0; j < this.mouseCurrentHoverData.component.points.length; j++)
 						{
-							if (component.points[i].x == this.mouseCurrentHoverComponent.points[j].x &&
-								component.points[i].y == this.mouseCurrentHoverComponent.points[j].y)
+							if (component.points[i].x == this.mouseCurrentHoverData.component.points[j].x &&
+								component.points[i].y == this.mouseCurrentHoverData.component.points[j].y)
 								component.selected[i] = true
 						}
 			}
 			else if (this.mouseCurrentHoverData.kind == "vertex")
 			{
-				this.mouseCurrentHoverComponent.selected[this.mouseCurrentHoverData.index] = true
+				this.mouseCurrentHoverData.component.selected[this.mouseCurrentHoverData.index] = true
 			}
 			else if (this.mouseCurrentHoverData.kind == "junction")
 			{
-				const x = this.mouseCurrentHoverComponent.points[this.mouseCurrentHoverData.index].x
-				const y = this.mouseCurrentHoverComponent.points[this.mouseCurrentHoverData.index].y
+				const x = this.mouseCurrentHoverData.component.points[this.mouseCurrentHoverData.index].x
+				const y = this.mouseCurrentHoverData.component.points[this.mouseCurrentHoverData.index].y
 				
 				for (let component of this.components)
 					for (let i = 0; i < component.points.length; i++)
@@ -224,44 +282,40 @@ export class CircuitEditor
 	{
 		ev.preventDefault()
 		
-		const pos = this.snapPos(this.getMousePos(ev))
-		this.mousePos = pos
+		const mousePosRawLast = this.mousePosRaw
+		this.mousePosRaw = this.getRawMousePos(ev)
+		this.mousePos = this.transformRawPos(this.mousePosRaw)
+		this.mousePosSnapped = this.snapPos(this.mousePos)
 		
-		this.mouseCurrentHoverComponent = null
-		this.mouseCurrentHoverData = null
+		this.mouseCurrentHoverData = this.getHoverData(this.mousePos)
 		
 		if (this.mouseDown)
 		{
-			if (this.mouseCurrentAction = "drag")
+			if (this.mouseCurrentAction == "pan")
 			{
-				const deltaPos = { 
-					x: pos.x - this.mouseDragOrigin.x,
-					y: pos.y - this.mouseDragOrigin.y
+				const deltaPosRaw = { 
+					x: this.mousePosRaw.x - mousePosRawLast.x,
+					y: this.mousePosRaw.y - mousePosRawLast.y
+				}
+				
+				const zoom = this.getZoomFactor(this.cameraZoomLevel)
+				this.cameraPos.x -= deltaPosRaw.x / zoom
+				this.cameraPos.y -= deltaPosRaw.y / zoom
+			}
+			
+			else if (this.mouseCurrentAction == "drag")
+			{
+				const dragPosSnapped = { 
+					x: this.mousePosSnapped.x - this.mouseDragOriginSnapped.x,
+					y: this.mousePosSnapped.y - this.mouseDragOriginSnapped.y
 				}
 				
 				for (let component of this.components)
-					component.dragMove(this, deltaPos)
+					component.dragMove(this, dragPosSnapped)
 			}
 		
 			this.refreshNodes()
 			this.render()
-		}
-		
-		else if (this.mouseAddComponentClass == null)
-		{
-			for (let component of this.components)
-			{
-				const hover = component.getHover(pos)
-				if (hover == null)
-					continue
-				
-				if (this.mouseCurrentHoverData == null ||
-					hover.distSqr < this.mouseCurrentHoverData.distSqr)
-				{
-					this.mouseCurrentHoverData = hover
-					this.mouseCurrentHoverComponent = component
-				}
-			}
 		}
 	}
 	
@@ -273,8 +327,35 @@ export class CircuitEditor
 		if (!this.mouseDown)
 			return
 		
+		this.componentsForEditing = []
+		
+		if (this.mouseCurrentAction == "pan" && this.mouseCurrentHoverData != null)
+			this.componentsForEditing = [this.mouseCurrentHoverData.component]
+		
 		this.mouseDown = false
 		this.removeDegenerateComponents()
+		this.refreshNodes()
+		this.render()
+		this.refreshUI()
+	}
+	
+	
+	onMouseWheel(ev)
+	{
+		ev.preventDefault()
+		
+		if (this.mousePosRaw == null)
+			return
+		
+		const prevMousePos = this.transformRawPos(this.mousePosRaw)
+		
+		this.cameraZoomLevel += (ev.deltaY > 0 ? -1 : ev.deltaY < 0 ? 1 : 0)
+		
+		const newMousePos = this.transformRawPos(this.mousePosRaw)
+		
+		this.cameraPos.x -= newMousePos.x - prevMousePos.x
+		this.cameraPos.y -= newMousePos.y - prevMousePos.y
+		
 		this.render()
 	}
 	
@@ -309,6 +390,17 @@ export class CircuitEditor
 	}
 	
 	
+	removeComponentsForEditing()
+	{
+		for (const componentForEditing of this.componentsForEditing)
+			this.components = this.components.filter(c => c !== componentForEditing)
+		
+		this.componentsForEditing = []
+		this.refreshNodes()
+		this.render()
+	}
+	
+	
 	removeDegenerateComponents()
 	{
 		for (let i = this.components.length - 1; i >= 0; i--)
@@ -326,7 +418,7 @@ export class CircuitEditor
 		this.groundNodeIndex = 0
 		this.voltageSources = 0
 		
-		const jointKey = (p) => p.x / this.tileSize * 1000 + p.y / this.tileSize
+		const jointKey = (p) => Math.floor(p.x / this.tileSize).toString() + "," + Math.floor(p.y / this.tileSize).toString()
 		
 		// Assign ground nodes.
 		let hasGround = false
@@ -491,6 +583,8 @@ export class CircuitEditor
 	
 	render()
 	{
+		this.ctx.save()
+		
 		if (this.debugDrawClean)
 			this.ctx.clearRect(0, 0, this.width, this.height)
 		else
@@ -514,6 +608,11 @@ export class CircuitEditor
 		this.ctx.textBaseline = "top"
 		this.ctx.fillText("t = " + this.time.toFixed(3) + " s", 10, 10)
 		
+		const zoom = this.getZoomFactor(this.cameraZoomLevel)
+		this.ctx.translate(this.width / 2, this.height / 2)
+		this.ctx.scale(zoom, zoom)
+		this.ctx.translate(-this.cameraPos.x, -this.cameraPos.y)
+		
 		this.ctx.lineWidth = 4
 		this.ctx.lineCap = "round"
 		
@@ -524,8 +623,8 @@ export class CircuitEditor
 		
 		this.ctx.strokeStyle = "#4af"
 		this.ctx.fillStyle = "#4af"
-		if (this.mouseCurrentHoverComponent != null && !this.mouseDown)
-			this.mouseCurrentHoverComponent.renderHover(this, this.ctx, this.mouseCurrentHoverData)
+		if (this.mouseCurrentHoverData != null && this.mouseAddComponentClass == null && !this.mouseDown)
+			this.mouseCurrentHoverData.component.renderHover(this, this.ctx, this.mouseCurrentHoverData)
 		
 		this.ctx.strokeStyle = "#f80"
 		this.ctx.fillStyle = "#f80"
@@ -542,13 +641,15 @@ export class CircuitEditor
 		this.drawNodeVoltages()
 		//this.drawDebugNodes()
 		
-		if (!this.mouseDown && this.mousePos != null && this.mouseAddComponentClass != null)
+		if (!this.mouseDown && this.mousePosSnapped != null && this.mouseAddComponentClass != null)
 		{
-			this.ctx.strokeStyle = "#eeeeee"
+			this.ctx.fillStyle = "#eeeeee"
 			this.ctx.beginPath()
-			this.ctx.arc(this.mousePos.x, this.mousePos.y, 3, 0, Math.PI * 2)
-			this.ctx.stroke()
+			this.ctx.arc(this.mousePosSnapped.x, this.mousePosSnapped.y, 6, 0, Math.PI * 2)
+			this.ctx.fill()
 		}
+		
+		this.ctx.restore()
 	}
 	
 	
@@ -598,6 +699,51 @@ export class CircuitEditor
 	}
 	
 	
+	fitCircuitToCamera()
+	{
+		this.cameraPos = { x: 0, y: 0 }
+		this.cameraZoomLevel = 0
+		
+		let totalBBox = null
+		for (const c of this.components)
+		{
+			const bbox = c.getBBox()
+			if (totalBBox == null)
+				totalBBox = bbox
+			else
+			{
+				totalBBox.xMin = Math.min(totalBBox.xMin, bbox.xMin)
+				totalBBox.yMin = Math.min(totalBBox.yMin, bbox.yMin)
+				totalBBox.xMax = Math.max(totalBBox.xMax, bbox.xMax)
+				totalBBox.yMax = Math.max(totalBBox.yMax, bbox.yMax)
+			}
+		}
+		
+		if (totalBBox != null)
+		{
+			this.cameraPos.x = (totalBBox.xMin + totalBBox.xMax) / 2
+			this.cameraPos.y = (totalBBox.yMin + totalBBox.yMax) / 2
+			
+			const circuitW = totalBBox.xMax - totalBBox.xMin + this.tileSize * 3
+			const circuitH = totalBBox.yMax - totalBBox.yMin + this.tileSize * 3
+			
+			while (this.cameraZoomLevel > -50)
+			{
+				const screenMin = this.transformRawPos({ x: 0,          y: 0           })
+				const screenMax = this.transformRawPos({ x: this.width, y: this.height })
+				
+				const screenW = screenMax.x - screenMin.x
+				const screenH = screenMax.y - screenMin.y
+				
+				if (screenW >= circuitW && screenH >= circuitH)
+					break
+				
+				this.cameraZoomLevel -= 1
+			}
+		}
+	}
+	
+	
 	saveToString()
 	{
 		let str = "0,"
@@ -627,7 +773,8 @@ export class CircuitEditor
 		{
 			index: 0,
 			isOver() { return this.index >= strParts.length },
-			read() { return strParts[this.index++] }
+			read() { return strParts[this.index++] },
+			readNumber() { return MathUtils.stringWithUnitPrefixToValue(strParts[this.index++]) }
 		}
 		
 		let loadData = 
@@ -675,6 +822,7 @@ export class CircuitEditor
 		}
 		
 		this.removeDegenerateComponents()
+		this.fitCircuitToCamera()
 		this.refreshNodes()
 		this.render()
 	}

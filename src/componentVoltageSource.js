@@ -1,4 +1,5 @@
 import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
+import * as MathUtils from "./math.js"
 
 
 export class ComponentVoltageSource extends ComponentDoubleEnded
@@ -32,10 +33,10 @@ export class ComponentVoltageSource extends ComponentDoubleEnded
 	saveToString(manager)
 	{
 		return this.joints[0] + "," + this.joints[1] + ",0," +
-			this.dcBias + "," +
-			this.frequency + "," +
-			this.amplitude + "," +
-			this.phaseOffset + ","
+			MathUtils.valueToStringWithUnitPrefix(this.dcBias) + "," +
+			MathUtils.valueToStringWithUnitPrefix(this.frequency) + "," +
+			MathUtils.valueToStringWithUnitPrefix(this.amplitude) + "," +
+			MathUtils.valueToStringWithUnitPrefix(this.phaseOffset) + ","
 	}
 	
 	
@@ -43,10 +44,10 @@ export class ComponentVoltageSource extends ComponentDoubleEnded
 	{
 		super.loadFromString(manager, loadData, reader)
 		const version = parseInt(reader.read())
-		this.dcBias = parseFloat(reader.read())
-		this.frequency = parseFloat(reader.read())
-		this.amplitude = parseFloat(reader.read())
-		this.phaseOffset = parseFloat(reader.read())
+		this.dcBias = reader.readNumber()
+		this.frequency = reader.readNumber()
+		this.amplitude = reader.readNumber()
+		this.phaseOffset = reader.readNumber()
 	}
 	
 	
@@ -68,7 +69,7 @@ export class ComponentVoltageSource extends ComponentDoubleEnded
 	}
 	
 	
-	solverIterationEnd(manager)
+	solverIterationEnd(manager, solver)
 	{
 		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
 	}
@@ -76,10 +77,10 @@ export class ComponentVoltageSource extends ComponentDoubleEnded
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Amplitude",    "V",   this.amplitude,   (x) => { this.amplitude = x })
-		editBoxDef.addNumberUnitInput("DC Bias",      "V",   this.dcBias,      (x) => { this.dcBias = x })
-		editBoxDef.addNumberUnitInput("Frequency",    "Hz",  this.frequency,   (x) => { this.frequency = x })
-		editBoxDef.addNumberUnitInput("Phase Offset", "deg", this.phaseOffset, (x) => { this.phaseOffset = x })
+		editBoxDef.addNumberInput("Amplitude",    "V",   this.amplitude,   (x) => { this.amplitude = x })
+		editBoxDef.addNumberInput("DC Bias",      "V",   this.dcBias,      (x) => { this.dcBias = x })
+		editBoxDef.addNumberInput("Frequency",    "Hz",  this.frequency,   (x) => { this.frequency = x })
+		editBoxDef.addNumberInput("Phase Offset", "deg", this.phaseOffset, (x) => { this.phaseOffset = x })
 	}
 	
 	

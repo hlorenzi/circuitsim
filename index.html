@@ -79,9 +79,25 @@
 			border: 2px solid #88a;
 			border-radius: 0.5em;
 			background-color: transparent;
+			outline: none;
+		}
+		
+		.buttonTool:hover
+		{
+			background-color: #88a;
+		}
+		
+		.buttonTool:active
+		{
+			background-color: #446;
 		}
 		
 		.buttonToolSelected
+		{
+			background-color: #851;
+		}
+		
+		.buttonToolSelected:hover
 		{
 			background-color: #851;
 		}
@@ -92,11 +108,70 @@
 			height: 4em;
 		}
 		
-		.buttonMenu
+		.toolbarButton
 		{
+			background-color: #668;
+			color: #fff;
+			border: 2px solid #668;
+			border-radius: 0.25em;
+			outline: none;
+			user-select: none;
+		}
+		
+		.toolbarButton:hover
+		{
+			background-color: #88a;
+			border-color: #88a;
+		}
+		
+		.toolbarButton:active
+		{
+			background-color: #446;
+			border-color: #446;
+		}
+		
+		.editBox
+		{
+			white-space: nowrap;
+			background-color: #223;
 			color: #def;
-			cursor: pointer;
-			text-decoration: underline;
+			border: 2px solid #668;
+			border-radius: 0.5em;
+			margin: 0.5em;
+			padding: 0.5em;
+		}
+		
+		.editBoxButton
+		{
+			background-color: #668;
+			color: #def;
+			border: 2px solid #668;
+			border-radius: 0.25em;
+			outline: none;
+			user-select: none;
+		}
+		
+		.editBoxButton:hover
+		{
+			background-color: #88a;
+			border-color: #88a;
+		}
+		
+		.editBoxButton:active
+		{
+			background-color: #446;
+			border-color: #446;
+		}
+		
+		.editBoxNumberInput
+		{
+			width: 3em;
+			padding: 0.5em;
+			background-color: #234;
+			color: #def;
+			text-align: right;
+			border: 1px solid #668;
+			border-radius: 0.25em;
 		}
 	</style>
 	

@@ -35,7 +35,7 @@ export class ComponentGround extends ComponentSingleEnded
 	}
 	
 	
-	solverIterationEnd(manager)
+	solverIterationEnd(manager, solver)
 	{
 		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
 	}

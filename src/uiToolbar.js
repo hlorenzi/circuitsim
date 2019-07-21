@@ -38,7 +38,7 @@ export class UIToolbar extends React.Component
 	
 	makeMenuItem(text, onClick)
 	{
-		return <a className="buttonMenu" onClick={ onClick }>{ text }</a>
+		return <button className="toolbarButton" onClick={ onClick }>{ text }</button>
 	}
 	
 	

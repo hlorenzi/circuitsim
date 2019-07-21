@@ -35,7 +35,7 @@ export class ComponentWire extends ComponentDoubleEnded
 	}
 	
 	
-	solverIterationEnd(manager)
+	solverIterationEnd(manager, solver)
 	{
 		this.current = -manager.getVoltageSourceCurrent(this.voltageSourceIndex)
 	}

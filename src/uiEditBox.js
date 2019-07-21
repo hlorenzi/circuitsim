@@ -13,7 +13,7 @@ function EditBoxContents(props)
 	
 	const editBoxDef =
 	{
-		addNumberUnitInput: (valueLabel, unitLabel, value, setValue) =>
+		addNumberInput: (valueLabel, unitLabel, value, setValue) =>
 		{
 			const key = elems.length.toString()
 			const str = state[key] === undefined ? MathUtils.valueToStringWithUnitPrefix(value) : state[key]
@@ -46,18 +46,11 @@ function EditBoxContents(props)
 					
 					<input
 						value={ str }
+						className="editBoxNumberInput"
 						onChange={ onChange }
 						onKeyDown={ (ev) => ev.stopPropagation() }
 						onFocus={ (ev) => ev.target.setSelectionRange(0, ev.target.value.length) }
-						style={{
-							width: "3em",
-							padding: "0.5em",
-							textAlign: "right",
-							backgroundColor: "#234",
-							color: "#def",
-							border: "1px solid #668",
-							borderRadius: "0.25em",
-					}}/>
+					/>
 					
 					<span style={{ marginLeft: "0.25em" }}>{ unitLabel }</span>
 				
@@ -68,9 +61,10 @@ function EditBoxContents(props)
 	
 	props.componentToEdit.getEditBox(editBoxDef)
 	
-	return <div>
-		{ elems }
-	</div>
+	return <React.Fragment>
+		{ elems.length == 0 ? null : <div style={{ width: "100%", marginTop: "0.5em", marginBottom: "0.5em", borderBottom: "1px solid #668" }}/> }
+		<div>{ elems }</div>
+	</React.Fragment>
 }
 
 
@@ -92,21 +86,17 @@ export function UIEditBox(props)
 			top: absolutePos.y + "px",
 			height: "0",
 		}}>
-			<div onContextMenu={ (ev) => ev.preventDefault() } style={{
+			<div className="editBox" onContextMenu={ (ev) => ev.preventDefault() } style={{
 				position: "relative",
-				whiteSpace: "nowrap",
 				top: "50%",
 				transform: "translate(0, -50%)",
-				backgroundColor: "#223",
-				color: "#def",
-				border: "2px solid #668",
-				borderRadius: "0.5em",
-				margin: "0.5em",
-				padding: "0.5em",
 			}}>
 		
-				<div style={{ fontWeight: "bold" }}>{ componentToEdit.constructor.getName() }</div>
-				<div style={{ width: "100%", marginTop: "0.5em", marginBottom: "0.5em", borderBottom: "1px solid #668" }}/>
+				<div style={{ display: "flex", alignItems: "center" }}>
+					<span style={{ fontWeight: "bold" }}>{ componentToEdit.constructor.getName() }</span>
+					<span style={{ flexGrow: 1, marginRight: "1em" }}/>
+					<button title="Remove component" className="editBoxButton" onClick={ props.onDelete } style={{ fontSize: "125%" }}>🗑️</button>
+				</div>
 				
 				<EditBoxContents componentToEdit={ componentToEdit } onChange={ props.onChange }/>
 			

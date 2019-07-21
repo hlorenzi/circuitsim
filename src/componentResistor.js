@@ -1,4 +1,5 @@
 import { ComponentDoubleEnded } from "./componentDoubleEnded.js"
+import * as MathUtils from "./math.js"
 
 
 export class ComponentResistor extends ComponentDoubleEnded
@@ -25,14 +26,14 @@ export class ComponentResistor extends ComponentDoubleEnded
 	
 	saveToString(manager)
 	{
-		return this.joints[0] + "," + this.joints[1] + "," + this.resistance + ","
+		return this.joints[0] + "," + this.joints[1] + "," + MathUtils.valueToStringWithUnitPrefix(this.resistance) + ","
 	}
 	
 	
 	loadFromString(manager, loadData, reader)
 	{
 		super.loadFromString(manager, loadData, reader)
-		this.resistance = parseFloat(reader.read())
+		this.resistance = reader.readNumber()
 	}
 	
 	
@@ -42,7 +43,7 @@ export class ComponentResistor extends ComponentDoubleEnded
 	}
 	
 	
-	solverIterationEnd(manager)
+	solverIterationEnd(manager, solver)
 	{
 		const v0 = manager.getNodeVoltage(this.nodes[0])
 		const v1 = manager.getNodeVoltage(this.nodes[1])
@@ -52,7 +53,7 @@ export class ComponentResistor extends ComponentDoubleEnded
 	
 	getEditBox(editBoxDef)
 	{
-		editBoxDef.addNumberUnitInput("Resistance", "Ω", this.resistance, (x) => { this.resistance = x })
+		editBoxDef.addNumberInput("Resistance", "Ω", this.resistance, (x) => { this.resistance = x })
 	}
 	
 	
